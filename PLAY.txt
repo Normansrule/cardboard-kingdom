@@ -1,0 +1,20 @@
+CARDBOARD KINGDOM - how to play
+================================
+
+Windows:  double-click  play.bat
+macOS:    double-click  play.command   (or open index.html)
+Linux:    double-click  play.sh        (or run: bash play.sh)
+Anywhere: open index.html, or cardboard-kingdom-single-file.html, in any web browser.
+
+No install and no internet needed. Your progress saves in the browser.
+
+Controls
+  Move ............ Arrow keys or WASD (or click / tap where to walk)
+  Talk / confirm .. Z, Space or Enter
+  Menu ............ Esc
+  Sound on/off .... M
+
+2-player co-op (one keyboard): choose "New Game (2 players)"
+  Player 1 (Sam) .... WASD to move, Space to act
+  Player 2 (Jules) .. Arrow keys to move, Enter to act
+  In battles, P1 controls Sam + Sir Corrugate and P2 controls Jules + Pip.
