@@ -188,17 +188,18 @@
       for (let y = 0; y < H; y += 20) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
       ctx.stroke();
       D.text(ctx, this.def.title, 24, 40, { size: 26, weight: 700, color: '#fff' });
-      D.text(ctx, 'BLUEPRINT', 24, 62, { size: 13, weight: 700, color: '#9fd3ff' });
+      D.text(ctx, 'Blueprint', 24, 62, { size: D.T.small, weight: 700, color: '#bfe2ff' });
     }
     drawPanel(ctx, extra) {
       const px = 676, pw = 274;
       D.panel(ctx, px, 14, pw, H - 140 - (this.canBlueprint() ? 48 : 0), { fill: '#fff4dc', tape: false });
       let y = 44;
       const text = this.showHint ? this.def.hint : this.def.brief;
-      D.text(ctx, this.showHint ? 'HINT' : 'THE JOB', px + 16, y, { size: 13, weight: 700, color: '#ef6b6b' });
+      D.text(ctx, this.showHint ? 'Hint' : 'The job', px + 16, y, { size: D.T.small, weight: 700, color: D.C.label });
       y += 20;
-      for (const l of D.wrap(ctx, text, pw - 32, 14, 500)) {
-        D.text(ctx, l, px + 16, y, { size: 14, weight: 500 });
+      // (stays at the small size: the material tiles below sit at a fixed height)
+      for (const l of D.wrap(ctx, text, pw - 32, D.T.small, 500)) {
+        D.text(ctx, l, px + 16, y, { size: D.T.small, weight: 500, color: D.C.text });
         y += 18;
       }
       y += 8;
@@ -555,7 +556,7 @@
           D.text(ctx, `str ${M.str}  $${M.cost}  x${d.supply[m] - this.used(m)}`, rc[0] + 38, rc[1] + 38, { size: 11, weight: 500, color: '#7a5434' });
         });
       });
-      if (this.state === 'build') D.text(ctx, 'Click to place, click again or right-click to remove. Keys: arrows, Z place, X erase, 1-6 materials.', 40, H - 14, { size: 13, color: '#cfe6ff' });
+      if (this.state === 'build') D.text(ctx, 'Click to place, click again or right-click to remove. Keys: arrows, Z place, X erase, 1-6 materials.', 40, H - 14, { size: D.T.small, color: '#e3f1ff' });
       this.drawOverlay(ctx);
     }
   }
@@ -735,7 +736,7 @@
         D.text(ctx, 'Floodgate: on canal, 3 scraps', px + 54, y + 72, { size: 13, weight: 600 });
         D.text(ctx, 'Dunes (^) are high ground.', px + 16, y + 100, { size: 13, weight: 500, color: '#7a5434' });
       });
-      if (this.state === 'build' || this.state === 'result') D.text(ctx, 'Click a tile to build or remove. Arrows + Z also work.', 40, H - 14, { size: 13, color: '#cfe6ff' });
+      if (this.state === 'build' || this.state === 'result') D.text(ctx, 'Click a tile to build or remove. Arrows + Z also work.', 40, H - 14, { size: D.T.small, color: '#e3f1ff' });
       this.drawOverlay(ctx);
     }
   }
@@ -1108,7 +1109,7 @@
         D.line(ctx, px + 16, y + 84, px + 46, y + 84, '#ef4444', 7);
         D.text(ctx, 'overloaded!', px + 54, y + 89, { size: 13, weight: 600 });
       });
-      if (this.state === 'build') D.text(ctx, 'Click a dot, then a neighbor dot to add a tube. Click a tube to reinforce, again to remove. Right-click removes.', 30, H - 14, { size: 13, color: '#cfe6ff' });
+      if (this.state === 'build') D.text(ctx, 'Click a dot, then a neighbor dot to add a tube. Click a tube to reinforce, again to remove. Right-click removes.', 30, H - 14, { size: D.T.small, color: '#e3f1ff' });
       this.drawOverlay(ctx);
     }
   }

@@ -950,29 +950,29 @@
         const active = this.ui && this.ui.actor === c;
         D.panel(ctx, x, y, 262, 52, { tape: false, inner: false, fill: active ? '#fff3b0' : c.alive ? '#fff4dc' : '#d9d0c4' });
         D.text(ctx, (CK.coop ? (this.playerOf(c) ? 'P2 ' : 'P1 ') : '') + c.name, x + 12, y + 19, { size: CK.coop ? 13 : 15, weight: 700, color: CK.coop && this.playerOf(c) ? '#2f7a55' : D.C.ink });
-        D.text(ctx, Data.costumes[c.costume].name, x + 12, y + 36, { size: 11, weight: 500, color: '#7a5434' });
+        D.text(ctx, Data.costumes[c.costume].name, x + 12, y + 37, { size: 12, weight: 600, color: D.C.textSoft });
         // soak meter
         D.rr(ctx, x + 118, y + 40, 100, 7, 3); ctx.fillStyle = 'rgba(74,44,23,.25)'; ctx.fill();
         if (c.soak > 0) { D.rr(ctx, x + 118, y + 40, 100 * c.soak / 100, 7, 3); ctx.fillStyle = c.floppy ? '#2f7fd0' : c.soak >= 50 ? '#4aa8f0' : '#9fd3ff'; ctx.fill(); }
-        D.text(ctx, c.floppy ? 'FLOPPY' : 'soak', x + 222, y + 48, { size: 10, weight: 700, color: c.floppy ? '#2f7fd0' : '#7a5434' });
+        D.text(ctx, c.floppy ? 'FLOPPY' : 'soak', x + 222, y + 48, { size: 11, weight: 700, color: c.floppy ? '#1f5fa0' : D.C.textSoft });
         D.rr(ctx, x + 118, y + 8, 100, 12, 6); ctx.fillStyle = '#4a2c17'; ctx.fill();
         D.rr(ctx, x + 120, y + 10, 96 * Math.max(0, c.hp / c.maxHp), 8, 4); ctx.fillStyle = c.hp < c.maxHp * 0.3 ? '#ef6b6b' : '#6cc56c'; ctx.fill();
-        D.text(ctx, `${c.hp}/${c.maxHp}`, x + 222, y + 19, { size: 12, weight: 700 });
+        D.text(ctx, `${c.hp}/${c.maxHp}`, x + 222, y + 19, { size: 13, weight: 700, color: D.C.text });
         for (let k = 0; k < 3; k++) D.star(ctx, x + 128 + k * 18, y + 32, 7, k < c.charge ? '#ffd25a' : 'rgba(74,44,23,.25)', 5);
         if (c.stamp && CK.drawStamp) CK.drawStamp(ctx, c.stamp, x + 290, y + 26, 30, { used: c.stampUsed });
-        if (c.charge >= 3) D.text(ctx, 'READY!', x + 186, y + 37, { size: 12, weight: 700, color: '#ef6b6b' });
+        if (c.charge >= 3) D.text(ctx, 'READY!', x + 186, y + 37, { size: 12, weight: 700, color: D.C.label });
       });
       D.text(ctx, this.night ? 'Night battle' : '', 18, 30, { size: 13, color: '#fff' });
     }
     drawUi(ctx) {
       const ui = this.ui, m = ui.actor;
-      const b = Math.sin(this.t * 6) * 5;
+      const b = D.calm() ? 0 : Math.sin(this.t * 5) * 4;
       const ax = m.pos.x + m.ox, ay = m.pos.y - 225 + b;
       D.poly(ctx, [ax - 12, ay, ax + 12, ay, ax, ay + 16], '#ffd25a', D.C.ink, 2);
       if (ui.mode === 'menu') {
         const items = this.menuItems(m);
         D.panel(ctx, W / 2 - 150, 62, 292, 46 + items.length * 36, { fill: '#fff4dc' });
-        D.text(ctx, (CK.coop ? (this.playerOf(m) ? 'Player 2 · ' : 'Player 1 · ') : '') + m.name + "'s turn", W / 2 - 4, 88, { size: 16, align: 'center', weight: 700, color: CK.coop && this.playerOf(m) ? '#2f7a55' : '#7a5434' });
+        D.text(ctx, (CK.coop ? (this.playerOf(m) ? 'Player 2 · ' : 'Player 1 · ') : '') + m.name + "'s turn", W / 2 - 4, 88, { size: 16, align: 'center', weight: 700, color: CK.coop && this.playerOf(m) ? '#2f7a55' : D.C.textSoft });
         this.menuRects(items).forEach((r, i) => D.button(ctx, ...r, items[i].label, { hover: i === ui.sel, disabled: !items[i].ok, size: 17 }));
         const it = items[ui.sel];
         const DESC = {
@@ -985,14 +985,14 @@
         };
         if (it.kind === 'special' || DESC[it.kind]) {
           const desc = it.kind === 'special' ? Data.costumes[m.costume].desc : DESC[it.kind];
-          const lines = D.wrap(ctx, desc, 200, 13, 500);
-          D.panel(ctx, W / 2 + 152, 120, 230, 34 + lines.length * 17, { tape: false, fill: '#fff' });
-          lines.forEach((l, i) => D.text(ctx, l, W / 2 + 166, 144 + i * 17, { size: 13, weight: 500 }));
+          const lines = D.wrap(ctx, desc, 206, D.T.small, 500);
+          D.panel(ctx, W / 2 + 152, 120, 236, 30 + lines.length * 19, { tape: false, fill: '#fff' });
+          lines.forEach((l, i) => D.text(ctx, l, W / 2 + 166, 142 + i * 19, { size: D.T.small, weight: 500, color: D.C.text }));
         }
       } else if (ui.mode === 'build') {
         const keys = Object.keys(Data.builds);
         D.panel(ctx, W / 2 - 146, 62, 292, 208, { fill: '#fff4dc' });
-        D.text(ctx, `Build what? (${CK.G.scraps} scraps)`, W / 2, 96, { size: 16, align: 'center', weight: 700, color: '#7a5434' });
+        D.text(ctx, `Build what? (${CK.G.scraps} scraps)`, W / 2, 96, { size: 16, align: 'center', weight: 700, color: D.C.textSoft });
         this.buildRects().forEach((r, i) => {
           const b = Data.builds[keys[i]];
           D.button(ctx, ...r, `${b.name} (${b.cost})`, { hover: i === ui.bsel, disabled: CK.G.scraps < b.cost, size: 17 });

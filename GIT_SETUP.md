@@ -59,7 +59,7 @@ rm -rf "$TMP"
 cd "$REPO"
 [ -d .git ] || git init -q -b main
 git add -A
-if git diff --cached --quiet; then echo "No changes to commit."; else git commit -q -m "Cardboard Kingdom v$(cat VERSION)" && echo "Committed: $(git log --oneline -1)"; fi
+if git diff --cached --quiet; then echo "No changes to commit."; else git commit -q -m "Cardboard Kingdom v$(tr -d '\r\n ' < VERSION)" && echo "Committed: $(git log --oneline -1)"; fi
 if ! git remote get-url origin >/dev/null 2>&1; then
   if gh repo view cardboard-kingdom >/dev/null 2>&1; then
     git remote add origin "$(gh repo view cardboard-kingdom --json url -q .url).git"
@@ -73,7 +73,7 @@ if ! git remote get-url origin >/dev/null 2>&1; then
 else
   git push -u origin main
 fi
-TAG="v$(cat VERSION)"
+TAG="v$(tr -d '\r\n ' < VERSION)"
 if git ls-remote --tags origin | grep -q "refs/tags/$TAG\$"; then echo "Release $TAG already exists. Bump VERSION for a new download."; else git tag -f "$TAG" && git push origin "$TAG" && echo "Tagged $TAG: GitHub is now building the downloadable zip."; fi
 echo
 echo "Repo:     $(gh repo view --json url -q .url)"
@@ -83,7 +83,7 @@ EOF
 ```
 
 **Already uploaded an older version?** Just download the new parts and run Block 3 again. It commits only what
-changed, pushes it, and because `VERSION` is new (2.15.0), it tags a new release with its own download.
+changed, pushes it, and because `VERSION` is new (2.16.0), it tags a new release with its own download.
 
 What it does: puts the newest source parts back together, mirrors it into `~/projects/cardboard-kingdom`, commits,
 creates the public repo the first time (or pushes to it after that), turns on GitHub Pages, and tags
@@ -124,4 +124,4 @@ mkdir -p ~/Games && cd ~/Games \
 | `No cardboard-kingdom-*-source-part*.zip found` or `Found 3 of 5 parts` | Move every part into `~/Downloads`, or run `ls ~/Downloads` to check their names. |
 | Push rejected ("fetch first") | The GitHub copy has commits you don't have. Run `cd ~/projects/cardboard-kingdom && git pull --rebase origin main && git push`. |
 | Pages shows 404 | Wait for `gh run list` to show the Pages run as ✓, then reload. Check Settings > Pages > Source is **GitHub Actions**. |
-| Want a new downloadable release of your own edits | `cd ~/projects/cardboard-kingdom && echo 2.15.1 > VERSION && git commit -am "v2.15.1" && git tag v2.15.1 && git push origin main v2.15.1` |
+| Want a new downloadable release of your own edits | `cd ~/projects/cardboard-kingdom && echo 2.16.1 > VERSION && git commit -am "v2.16.1" && git tag v2.16.1 && git push origin main v2.16.1` |

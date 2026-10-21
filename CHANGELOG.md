@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.16.0 — A design pass (2026-10-20)
+
+An audit of the interface and the docs (hierarchy, spacing, type, colour, motion), then fixes. The cardboard-and-tape look stays; what sits on it got tidier. Before and after: [docs/media/readme/ui/before-after.png](docs/media/readme/ui/before-after.png).
+
+**Interface**
+- **Shared design tokens** in `js/engine/draw.js`: named colours for sheets, text, soft text, labels and disabled states, a six-step type scale with a 14 px floor, and one interface easing curve (`CK.Ease.ui`, a strong ease-out) in `core.js`.
+- **Contrast fixes.** The "Goal" and puzzle "The job" labels, the HUD's season line, "Rain-soaked", READY! and disabled buttons all reach at least 4.5:1 now (several were 2.4 to 4.0).
+- **Disabled buttons** go flat with a dashed edge, so "not yet" doesn't rely on colour alone. The Workbench opens on the first thing you can actually do.
+- **Pause menu** is grouped (keep playing / your stuff / leave) and shows your current goal at the bottom.
+- **Choices** stack directly on top of their question, and the question box fits its text instead of a fixed tall panel.
+- **Settings:** a new **Reduce motion** option (Auto follows your computer's setting). Drawn arrows replace the ◀ ▶ text glyphs, and the description no longer runs into the panel edge.
+- **Small text** in the party screen, HUD and battle cards moved up to readable sizes; the field-power tag now fits its text.
+- **Controls reminder** sits on a paper strip so it reads over any scenery, then steps aside after the first few seconds in a place and hides under menus.
+- **Toasts** lost the tape that sat on top of their words.
+- Short paragraphs (Workbench facts, setting descriptions, choice prompts) are balanced so they don't end on a single word.
+
+**Motion**
+- Dialogue rises 16 px on the interface curve instead of sliding 40 px linearly; reduced motion just fades it.
+- The reward pop-up grows from 92% with no overshoot (it used to spring out of nothing), and its rays turn at half speed.
+- Buttons sink onto their shadow while the mouse is held on them. Keyboard cursor moves still don't animate.
+- With Reduce motion on: no screen shake, no title-logo bob, no turning rays, no toast slide.
+
+**Play page (`index.html`, also the GitHub Pages site)**
+- Pinch-zoom is no longer disabled, the canvas has a label for screen readers and a visible focus ring, and there's a `noscript` message, a description, a theme colour and a little box favicon.
+- A warm desk-lamp background and a soft offset shadow replace the flat halo, and the loading text gets a folding-box animation that stops under reduced motion.
+
+**Docs**
+- The README is rewritten: what it is, key features, screenshots of the refreshed interface, setup and usage, project structure, and a Design section. The full plot moved to [docs/STORY.md](docs/STORY.md).
+- Publishing: `tools/package.sh` and the GIT_SETUP commands read `VERSION` without stray line endings, so tags and zip names stay clean.
+
 ## 2.15.0 — Rivet, and the road so far (2026-10-18)
 
 How it was built: [docs/media/process/v2.15](docs/media/process/v2.15/README.md).

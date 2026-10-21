@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 tools/build_single.py
-VERSION="$(cat VERSION 2>/dev/null || echo dev)"
+VERSION="$(tr -d '\r\n ' < VERSION 2>/dev/null || true)"; VERSION="${VERSION:-dev}"
 NAME="cardboard-kingdom-${VERSION}"
 STAGE="dist/${NAME}"
 rm -rf "${STAGE}" "dist/${NAME}.zip"

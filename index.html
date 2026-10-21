@@ -2,19 +2,59 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cardboard Kingdom</title>
+<meta name="description" content="A cozy Costume Quest-style adventure about a burnt-out civil engineering student and a kingdom made of cardboard. Plays in your browser, alone or with a friend.">
+<meta name="theme-color" content="#2a1d14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='9' width='24' height='19' rx='2' fill='%23d9a66b' stroke='%234a2c17' stroke-width='2.5'/%3E%3Cpath d='M4 9l5-5h14l5 5' fill='%23ecc38c' stroke='%234a2c17' stroke-width='2.5' stroke-linejoin='round'/%3E%3Crect x='12' y='13' width='8' height='4' fill='%23f3e6b8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; background: #2a1d14; overflow: hidden; touch-action: none; }
-  canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 6px; box-shadow: 0 0 40px rgba(0,0,0,.5); outline: none; }
-  #boot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #ecc38c; font: 600 22px "Fredoka", sans-serif; }
+  :root {
+    --bark: #2a1d14;      /* the table the box sits on */
+    --bark-lift: #3a281b;
+    --card: #d9a66b;
+    --card-light: #ecc38c;
+    --ink: #4a2c17;
+    --tape: #f3e6b8;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    /* a warm pool of lamp light under the game, so the frame feels like a desk, not a void */
+    background: radial-gradient(ellipse at 50% 45%, var(--bark-lift), var(--bark) 70%);
+    color: var(--card-light);
+    font-family: "Fredoka", "Trebuchet MS", sans-serif;
+  }
+  ::selection { background: var(--tape); color: var(--ink); }
+  canvas {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    border-radius: 8px; outline: none; touch-action: none;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  canvas:focus-visible { outline: 3px solid var(--tape); outline-offset: 4px; }
+  #boot {
+    position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px;
+    align-items: center; justify-content: center; font-weight: 600; font-size: 22px;
+  }
+  /* the loading box: its flaps fold shut on the interface curve, then pause, then repeat */
+  .box { position: relative; width: 56px; height: 40px; margin-top: 18px; background: var(--card); border: 3px solid var(--ink); border-radius: 3px; }
+  .box::before, .box::after {
+    content: ""; position: absolute; top: -3px; width: 28px; height: 16px; background: var(--card-light);
+    border: 3px solid var(--ink); border-radius: 2px; animation: flap 1.6s var(--ease-out) infinite;
+  }
+  .box::before { left: -3px; transform-origin: 0 100%; transform: rotate(-150deg); }
+  .box::after { right: -3px; transform-origin: 100% 100%; transform: rotate(150deg); animation-delay: 0.12s; }
+  @keyframes flap { 0%, 15% { transform: rotate(var(--open, -150deg)); } 55%, 100% { transform: rotate(0deg); } }
+  .box::after { --open: 150deg; }
+  @media (prefers-reduced-motion: reduce) { .box::before, .box::after { animation: none; transform: none; } }
+  noscript { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 20px; }
 </style>
 </head>
 <body>
-<div id="boot">Unfolding the cardboard...</div>
-<canvas id="game" tabindex="0"></canvas>
+<div id="boot" role="status"><div class="box" aria-hidden="true"></div>Unfolding the cardboard...</div>
+<noscript>Cardboard Kingdom needs JavaScript to run. Turn it on for this page and reload.</noscript>
+<canvas id="game" tabindex="0" aria-label="Cardboard Kingdom. Arrow keys or WASD to move, Z, Space or Enter to talk and confirm, Escape for the menu, M for sound."></canvas>
 <script src="js/engine/core.js"></script>
 <script src="js/engine/audio.js"></script>
 <script src="js/engine/draw.js"></script>

@@ -90,17 +90,22 @@
       D.char(ctx, 'critter', 620, 490, { s: 1.4, species: 'bunny', color: '#fff', hat: 'flowers', mood: 'happy' });
       this.parts.draw(ctx);
       // logo
-      const b = Math.sin(this.t * 2) * 4;
+      const b = D.calm() ? 0 : Math.sin(this.t * 1.6) * 3;
       ctx.save(); ctx.translate(W / 2, 140 + b); ctx.rotate(-0.03);
       D.cardboard(ctx, -330, -80, 660, 150, { r: 16, lw: 5, fill: '#d9a66b' });
       D.tape(ctx, -350, -86, 80, 26, -0.5);
       D.tape(ctx, 270, 40, 80, 26, -0.5);
       D.text(ctx, 'Cardboard Kingdom', 0, 18, { size: 70, weight: 700, align: 'center', color: '#fffaf0', outline: D.C.ink, ow: 10 });
-      D.text(ctx, 'a cozy adventure about building a better life', 0, 54, { size: 18, weight: 600, align: 'center', color: '#5b3a1e' });
+      D.text(ctx, 'a cozy adventure about building a better life', 0, 54, { size: 18, weight: 600, align: 'center', color: D.C.text });
       ctx.restore();
       const items = this.items();
       this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: 22 }));
-      D.text(ctx, 'Arrows + Z/Enter, or click. M toggles sound. 2 players: P1 = WASD + Space, P2 = Arrows + Enter.', W / 2, H - 14, { size: 14, align: 'center', color: '#5b3a1e' });
+      if (CK.Scenes.top() === this) {
+        const hint = 'Arrows + Z/Enter, or click  ·  M sound  ·  2 players: P1 WASD + Space, P2 Arrows + Enter';
+        const hw = D.measure(ctx, hint, D.T.small, 600) + 32;
+        D.rr(ctx, W / 2 - hw / 2, H - 36, hw, 26, 13); ctx.fillStyle = 'rgba(255,250,240,0.82)'; ctx.fill();
+        D.text(ctx, hint, W / 2, H - 18, { size: D.T.small, align: 'center', color: D.C.text });
+      }
     }
   }
 
@@ -438,9 +443,8 @@
         ctx.beginPath(); ctx.rect(x + 4, y + 4, w - 8, 200); ctx.clip();
         D.giant(ctx, m.costume, x + w / 2, y + 200, { s: w < 240 ? 0.6 : 0.7, who: m.id, mood: 'happy' });
         ctx.restore();
-        D.text(ctx, st.name, x + 16, y + 226, { size: 18, weight: 700 });
-        D.text(ctx, `${Data.costumes[m.costume].name}`, x + 16, y + 244, { size: 12, weight: 600, color: '#7a5434' });
-        D.text(ctx, `HP ${st.maxHp} · ATK ${st.atk}`, x + 16, y + 258, { size: 12, weight: 600, color: '#7a5434' });
+        D.text(ctx, st.name, x + 16, y + 226, { size: 18, weight: 700, color: D.C.text });
+        D.text(ctx, `${Data.costumes[m.costume].name}  ·  HP ${st.maxHp}  ·  ATK ${st.atk}`, x + 16, y + 248, { size: D.T.small, weight: 600, color: D.C.textSoft });
       });
       if (this.mode === 'costume') {
         D.text(ctx, `Choose a costume for ${CK.stats(G.party[this.sel]).name}:`, 60, 350, { size: 18, weight: 700, color: '#fff', outline: D.C.ink });
@@ -450,9 +454,9 @@
         });
         const cd = Data.costumes[G.owned[this.csel]];
         D.panel(ctx, 60, H - 76, 840, 56, { tape: false, fill: '#fff' });
-        D.text(ctx, `${cd.special}: ${cd.desc}  (HP ${cd.hp >= 0 ? '+' : ''}${cd.hp}, ATK +${cd.atk})`, 76, H - 50, { size: 14, weight: 600 });
+        D.text(ctx, `${cd.special}: ${cd.desc}  (HP ${cd.hp >= 0 ? '+' : ''}${cd.hp}, ATK +${cd.atk})`, 76, H - 50, { size: D.T.small, weight: 600, color: D.C.text });
         const fp = Data.fieldPowers[G.owned[this.csel]];
-        if (fp) D.text(ctx, 'Field power (worn by Sam' + (CK.coop ? ' or Jules' : '') + '): ' + fp, 76, H - 30, { size: 13, weight: 600, color: '#2f5f8a' });
+        if (fp) D.text(ctx, 'Field power (worn by Sam' + (CK.coop ? ' or Jules' : '') + '): ' + fp, 76, H - 30, { size: D.T.small, weight: 600, color: '#2f5f8a' });
       } else {
         D.text(ctx, 'Pick a party member to change costume. Each costume has its own Special.', 60, 380, { size: 16, weight: 600, color: '#fff' });
         D.button(ctx, W - 150, H - 60, 130, 44, 'Done', { hover: true });
@@ -464,7 +468,9 @@
   class Workbench {
     constructor() {
       this.transparent = true;
-      this.sel = 0;
+      const G = CK.G, next = Data.reinforce[G.reinforce + 1];
+      // don't open with the cursor on a button you can't press yet
+      this.sel = next && G.scraps >= next.cost ? 0 : 1;
       this.t = 0;
     }
     items() {
@@ -522,15 +528,15 @@
     }
     draw(ctx) {
       const G = CK.G;
-      ctx.fillStyle = 'rgba(30,15,5,0.55)';
+      ctx.fillStyle = D.C.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 260, 30, 520, 500, { fill: '#fff4dc' });
-      D.text(ctx, 'Cardboard Workbench', W / 2, 86, { size: 28, weight: 700, align: 'center' });
+      D.panel(ctx, W / 2 - 260, 24, 520, 496, { fill: D.C.sheet });
+      D.text(ctx, 'Cardboard Workbench', W / 2, 76, { size: 28, weight: 700, align: 'center', color: D.C.text });
       const cur = Data.reinforce[G.reinforce];
-      D.text(ctx, `Armor: ${cur.name}  ·  Scraps: ${G.scraps}`, W / 2, 116, { size: 17, weight: 600, align: 'center', color: '#7a5434' });
+      D.text(ctx, `Armor: ${cur.name}  ·  Scraps: ${G.scraps}`, W / 2, 104, { size: D.T.ui, weight: 600, align: 'center', color: D.C.textSoft });
       const next = Data.reinforce[G.reinforce + 1] || cur;
-      D.wrap(ctx, '"' + next.fact + '"', 440, 14, 500).forEach((l, i) => D.text(ctx, l, W / 2, 150 + i * 18, { size: 14, weight: 500, align: 'center', color: '#5b3a1e' }));
-      D.text(ctx, `Reinforcing adds defense and makes water attacks ${Math.round(next.water * 100)}% weaker.`, W / 2, 210, { size: 13, align: 'center', color: '#7a5434' });
+      D.balance(ctx, '"' + next.fact + '"', 420, D.T.small, 500).slice(0, 3).forEach((l, i) => D.text(ctx, l, W / 2, 140 + i * 19, { size: D.T.small, weight: 500, align: 'center', color: D.C.text }));
+      D.text(ctx, `Reinforcing adds defense and makes water attacks ${Math.round(next.water * 100)}% weaker.`, W / 2, 204, { size: D.T.small, align: 'center', color: D.C.textSoft });
       const items = this.items();
       this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: 17, disabled: i === 0 && (!Data.reinforce[G.reinforce + 1] || G.scraps < Data.reinforce[G.reinforce + 1].cost) }));
     }
@@ -549,16 +555,16 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.6)';
+      ctx.fillStyle = D.C.scrim;
       ctx.fillRect(0, 0, W, H);
       D.panel(ctx, 80, 30, W - 160, H - 60, { fill: '#fffaf0' });
-      D.text(ctx, "Sam's Journal", W / 2, 76, { size: 28, weight: 700, align: 'center' });
+      D.text(ctx, "Sam's Journal", W / 2, 76, { size: 28, weight: 700, align: 'center', color: D.C.text });
       let y = 112;
       const entries = CK.G.journal.slice(-8);
       if (!entries.length) D.text(ctx, 'Nothing written yet.', W / 2, y, { size: 16, align: 'center' });
       for (const e of entries) {
         for (const l of D.wrap(ctx, '• ' + e, W - 240, 15, 500)) {
-          D.text(ctx, l, 110, y, { size: 15, weight: 500 });
+          D.text(ctx, l, 110, y, { size: 15, weight: 500, color: D.C.text });
           y += 20;
         }
         y += 8;
@@ -576,7 +582,9 @@
       return ['Resume', 'Party & Costumes', 'Friends', 'Stamps & Letters', 'Journal', 'Settings', 'Save game', 'Quit to title'];
     }
     rects() {
-      return this.items().map((s, i) => [W / 2 - 140, 116 + i * 48, 280, 40]);
+      // three groups: get back to playing / look at your stuff / leave. Gaps do the grouping.
+      const gap = (i) => (i >= 1 ? 14 : 0) + (i >= 5 ? 14 : 0);
+      return this.items().map((s, i) => [W / 2 - 140, 100 + i * 44 + gap(i), 280, 38]);
     }
     update() {
       const items = this.items();
@@ -599,12 +607,15 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.5)';
+      ctx.fillStyle = D.C.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 180, 30, 360, 484, { fill: '#fff4dc' });
-      D.text(ctx, 'Paused', W / 2, 78, { size: 30, weight: 700, align: 'center' });
+      D.panel(ctx, W / 2 - 180, 24, 360, 496, { fill: D.C.sheet });
+      D.text(ctx, 'Paused', W / 2, 74, { size: D.T.title, weight: 700, align: 'center', color: D.C.text });
       const items = this.items();
-      this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel }));
+      this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: D.T.ui }));
+      // where you are, so the menu doubles as a "what was I doing?" check
+      const ow = CK.OW, obj = ow && ow.ch && ow.ch.objective ? ow.ch.objective(CK.G) : '';
+      if (obj) D.text(ctx, D.wrap(ctx, obj, 300, D.T.small, 600)[0], W / 2, 500, { size: D.T.small, weight: 600, align: 'center', color: D.C.textSoft });
     }
   }
   CK.PauseMenu = PauseMenu;

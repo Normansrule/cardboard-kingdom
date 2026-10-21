@@ -45,11 +45,12 @@
       const sp = CK.Data.speakers[this.who] || CK.Data.speakers.narrator;
       const hasP = !!sp.look;
       const x = 30, y = H - 168, w = W - 60, h = 150;
-      const pop = Math.min(1, this.t * 6);
+      // the box rises a short way into place on the interface curve; reduced motion just fades it
+      const k = Math.min(1, this.t * 5), pop = CK.Ease.ui(k);
       ctx.save();
-      ctx.translate(0, (1 - pop) * 40);
-      ctx.globalAlpha = pop;
-      D.panel(ctx, x, y, w, h, { fill: '#fff4dc', seed: 11 });
+      if (!D.calm()) ctx.translate(0, (1 - pop) * 16);
+      ctx.globalAlpha = Math.min(1, k * 1.6);
+      D.panel(ctx, x, y, w, h, { fill: D.C.sheet, seed: 11 });
       let tx = x + 28;
       if (hasP) {
         D.portrait(ctx, this.who, x + 18, y + 20, this.mood);
@@ -58,7 +59,7 @@
       if (sp.name) {
         const nw = D.measure(ctx, sp.name, 20, 700) + 40;
         D.tape(ctx, tx - 8, y - 16, nw, 30, -0.03, 0.95);
-        D.text(ctx, sp.name, tx + nw / 2 - 8, y + 6, { size: 20, weight: 700, align: 'center', color: '#5b3a1e' });
+        D.text(ctx, sp.name, tx + nw / 2 - 8, y + 6, { size: 20, weight: 700, align: 'center', color: D.C.text });
       }
       const lines = D.wrap(ctx, this.text.slice(0, Math.floor(this.shown)), w - (tx - x) - 30, 22, 500);
       // wrap the full text once for stable layout
@@ -67,15 +68,15 @@
       let ly = y + 46;
       for (const L of full) {
         const part = L.slice(0, Math.max(0, n));
-        D.text(ctx, part, tx, ly, { size: 22, weight: 500, color: this.opts.italic ? '#6b5a4a' : '#3d2412' });
+        D.text(ctx, part, tx, ly, { size: 22, weight: 500, color: this.opts.italic ? D.C.textSoft : D.C.text });
         n -= L.length + 1;
         ly += 30;
         if (n <= 0) break;
       }
       void lines;
       if (this.shown >= this.text.length) {
-        const b = Math.sin(this.t * 6) * 3;
-        D.poly(ctx, [x + w - 40, y + h - 30 + b, x + w - 24, y + h - 30 + b, x + w - 32, y + h - 20 + b], '#5b3a1e');
+        const b = D.calm() ? 0 : Math.sin(this.t * 5) * 2;
+        D.poly(ctx, [x + w - 40, y + h - 30 + b, x + w - 24, y + h - 30 + b, x + w - 32, y + h - 20 + b], D.C.textSoft);
       }
       ctx.restore();
     }
@@ -109,14 +110,16 @@
     }
     rects() {
       const n = this.options.length;
+      // answers end 16px above the question box (which is taller when it has a portrait)
+      const base = H - 18 - (this.who ? 150 : 96) - 16;
       // long lists (the fold-out map late in the game) go into two columns so they fit on screen
       if (n > 5) {
         const rows = Math.ceil(n / 2), bw = 410, bh = 40, gap = 10;
-        const top = H - 180 - rows * (bh + gap);
+        const top = base - rows * (bh + gap) + gap;
         return this.options.map((o, i) => [W / 2 - bw - 6 + Math.floor(i / rows) * (bw + 12), top + (i % rows) * (bh + gap), bw, bh]);
       }
-      const bw = 560, bh = 46, gap = 12;
-      const top = H - 180 - n * (bh + gap);
+      const bw = 560, bh = 46, gap = 10;
+      const top = base - n * (bh + gap) + gap;
       return this.options.map((o, i) => [W / 2 - bw / 2, top + i * (bh + gap), bw, bh]);
     }
     update(dt) {
@@ -134,11 +137,15 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.25)';
+      ctx.fillStyle = 'rgba(30,15,5,0.3)';
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, 30, H - 168, W - 60, 150, { fill: '#fff4dc' });
-      if (this.who) D.portrait(ctx, this.who, 48, H - 148);
-      D.text(ctx, this.prompt, this.who ? 178 : 58, H - 110, { size: 24, weight: 600, color: '#3d2412' });
+      // the question is the heading; the answers stack directly above it, so they read as one card
+      const hasP = !!this.who;
+      const ph = hasP ? 150 : 96, py = H - 18 - ph;
+      D.panel(ctx, 30, py, W - 60, ph, { fill: D.C.sheet });
+      if (hasP) D.portrait(ctx, this.who, 48, py + 20);
+      const lines = D.balance(ctx, this.prompt, W - (hasP ? 240 : 120), 24, 600);
+      lines.slice(0, 3).forEach((l, i) => D.text(ctx, l, hasP ? 178 : 58, py + (hasP ? 50 : 56 - (lines.length > 1 ? 14 : 0)) + i * 30, { size: 24, weight: 600, color: D.C.text }));
       this.rects().forEach((r, i) => D.button(ctx, ...r, this.options[i], { hover: i === this.sel, size: 20 }));
     }
   }
@@ -173,23 +180,26 @@
     draw(ctx) {
       ctx.fillStyle = `rgba(30,15,5,${Math.min(0.45, this.t)})`;
       ctx.fillRect(0, 0, W, H);
-      const s = CK.Ease.outBack(Math.min(1, this.t * 2.5));
+      // a rare, earned moment: it may glow, but it grows from 92% (never from nothing) and doesn't overshoot
+      const k = CK.Ease.ui(Math.min(1, this.t * 3)), calm = D.calm();
+      const s = calm ? 1 : 0.92 + 0.08 * k;
       ctx.save();
       ctx.translate(W / 2, H / 2 - 20);
+      ctx.globalAlpha = Math.min(1, this.t * 4);
       ctx.scale(s, s);
       for (let i = 0; i < 12; i++) {
         ctx.save();
-        ctx.rotate(this.t * 0.5 + (i * Math.PI) / 6);
-        ctx.globalAlpha = 0.25;
+        ctx.rotate((calm ? 0 : this.t * 0.25) + (i * Math.PI) / 6);
+        ctx.globalAlpha *= 0.22;
         D.poly(ctx, [0, 0, -20, -260, 20, -260], '#fff3a0');
         ctx.restore();
       }
-      D.panel(ctx, -230, -120, 460, 240, { fill: '#fff4dc' });
+      D.panel(ctx, -230, -120, 460, 240, { fill: D.C.sheet });
       if (this.icon && CK.Data.costumes[this.icon]) {
         D.giant(ctx, this.icon, 0, 30, { s: 0.55, who: 'sam', mood: 'happy' });
       } else if (this.icon) D.icon(ctx, this.icon, 0, -20, 3);
-      D.text(ctx, this.title, 0, 70, { size: 28, weight: 700, align: 'center', color: '#3d2412' });
-      D.text(ctx, this.sub || '', 0, 100, { size: 17, weight: 500, align: 'center', color: '#6b4a2a' });
+      D.text(ctx, this.title, 0, 70, { size: 28, weight: 700, align: 'center', color: D.C.text });
+      D.text(ctx, this.sub || '', 0, 100, { size: 17, weight: 500, align: 'center', color: D.C.textSoft });
       ctx.restore();
     }
   }
@@ -221,9 +231,9 @@
       ctx.globalAlpha = Math.max(0, a);
       ctx.fillStyle = 'rgba(30,15,5,0.55)';
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 300, H / 2 - 80, 600, 160, { fill: '#fff4dc' });
-      D.text(ctx, this.title, W / 2, H / 2 - 5, { size: 40, weight: 700, align: 'center', color: '#3d2412' });
-      D.text(ctx, this.sub || '', W / 2, H / 2 + 38, { size: 20, weight: 500, align: 'center', color: '#7a5434' });
+      D.panel(ctx, W / 2 - 300, H / 2 - 80, 600, 160, { fill: D.C.sheet });
+      D.text(ctx, this.title, W / 2, H / 2 - 2, { size: 40, weight: 700, align: 'center', color: D.C.text });
+      D.text(ctx, this.sub || '', W / 2, H / 2 + 36, { size: 20, weight: 500, align: 'center', color: D.C.textSoft });
       ctx.globalAlpha = 1;
     }
   }

@@ -24,7 +24,26 @@
     },
   });
 
+  // CSS-style cubic-bezier(x1, y1, x2, y2), solved with a few Newton steps
+  function bezier(x1, y1, x2, y2) {
+    const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+    const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+    return (t) => {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      let u = t;
+      for (let i = 0; i < 6; i++) {
+        const x = ((ax * u + bx) * u + cx) * u - t;
+        const d = (3 * ax * u + 2 * bx) * u + cx;
+        if (Math.abs(x) < 1e-5 || !d) break;
+        u -= x / d;
+      }
+      return ((ay * u + by) * u + cy) * u;
+    };
+  }
   CK.Ease = {
+    // the interface curve: a strong ease-out, quick to respond and soft to land
+    ui: bezier(0.23, 1, 0.32, 1),
     linear: (t) => t,
     inQuad: (t) => t * t,
     outQuad: (t) => t * (2 - t),
@@ -344,15 +363,16 @@
       }
     }
     for (const t of toasts) {
-      const a = Math.min(1, t.t * 4, (3 - t.t) * 2);
-      const slide = (1 - Math.min(1, t.t * 5)) * 30;
-      ctx.globalAlpha = a;
+      // in fast, out faster; a short drop from above unless motion is reduced
+      const a = Math.min(1, t.t * 5, (3 - t.t) * 4);
+      const slide = CK.D.calm() ? 0 : (1 - CK.Ease.ui(Math.min(1, t.t * 4))) * -12;
+      ctx.globalAlpha = Math.max(0, a);
       ctx.font = `600 18px ${CK.FONT}`;
-      const w = ctx.measureText(t.text).width + 36;
-      CK.D.panel(ctx, W / 2 - w / 2, y - slide, w, 36, { seed: 3 });
-      CK.D.text(ctx, t.text, W / 2, y - slide + 24, { size: 18, align: 'center', color: '#4a2c17' });
+      const w = ctx.measureText(t.text).width + 40;
+      CK.D.panel(ctx, W / 2 - w / 2, y + slide, w, 36, { seed: 3, inner: false });
+      CK.D.text(ctx, t.text, W / 2, y + slide + 24, { size: 18, align: 'center', color: CK.D.C.text });
       ctx.globalAlpha = 1;
-      y += 42;
+      y += 44;
     }
   }
 

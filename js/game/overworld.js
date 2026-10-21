@@ -1345,7 +1345,7 @@
       D.panel(ctx, 12, 10, 268, 58, { seed: 1, tape: false });
       D.icon(ctx, this.night ? 'moon' : 'sun', 40, 39, 1);
       D.text(ctx, this.ch.name, 64, 34, { size: 18, weight: 700, color: D.C.ink });
-      D.text(ctx, this.season.name + (this.night ? ' · Night' : ' · Day') + '   Lv ' + G.level, 64, 55, { size: 14, weight: 500, color: '#7a5434' });
+      D.text(ctx, this.season.name + (this.night ? ' · Night' : ' · Day') + '  ·  Lv ' + G.level, 64, 55, { size: D.T.small, weight: 600, color: D.C.textSoft });
       D.panel(ctx, 12, 74, 150, 34, { seed: 2, tape: false, inner: false });
       D.icon(ctx, 'scrap', 32, 91, 0.9);
       D.text(ctx, '' + G.scraps, 46, 98, { size: 17, weight: 700 });
@@ -1355,29 +1355,40 @@
       if (obj) {
         const lines = D.wrap(ctx, obj, 300, 16, 600);
         const h = 36 + lines.length * 20;
-        D.panel(ctx, W - 344, 10, 332, h, { seed: 4, tape: false, fill: '#fff4dc' });
-        D.text(ctx, 'GOAL', W - 326, 32, { size: 13, weight: 700, color: '#ef6b6b' });
-        lines.forEach((l, i) => D.text(ctx, l, W - 326, 52 + i * 20, { size: 16, weight: 600 }));
+        D.panel(ctx, W - 344, 10, 332, h, { seed: 4, tape: false, fill: D.C.sheet });
+        D.text(ctx, 'Goal', W - 326, 32, { size: D.T.small, weight: 700, color: D.C.label });
+        lines.forEach((l, i) => D.text(ctx, l, W - 326, 52 + i * 20, { size: 16, weight: 600, color: D.C.text }));
       }
       // field power + wetness
       const fp = CK.Data.fieldPowers[this.costumeOf(0)];
       let hy = 114;
       if (fp && this.ch.id !== 'campus') {
-        D.panel(ctx, 12, hy, 268, 30, { seed: 5, tape: false, inner: false, fill: '#eaf4ff' });
-        D.text(ctx, 'Field power: ' + fp, 22, hy + 20, { size: 12, weight: 600, color: '#2f5f8a' });
+        const fw = Math.max(150, D.measure(ctx, 'Field power: ' + fp, D.T.small, 600) + 24);
+        D.panel(ctx, 12, hy, fw, 30, { seed: 5, tape: false, inner: false, fill: '#eaf4ff' });
+        D.text(ctx, 'Field power: ' + fp, 24, hy + 20, { size: D.T.small, weight: 600, color: '#2f5f8a' });
         hy += 36;
       }
       if ((G.wet || 0) > 0.05) {
-        D.panel(ctx, 12, hy, 150, 30, { seed: 6, tape: false, inner: false, fill: '#dff0ff' });
-        D.text(ctx, 'Rain-soaked ' + Math.round(G.wet * 100) + '%', 22, hy + 20, { size: 12, weight: 700, color: '#2f7fd0' });
+        D.panel(ctx, 12, hy, 160, 30, { seed: 6, tape: false, inner: false, fill: '#dff0ff' });
+        D.text(ctx, 'Rain-soaked ' + Math.round(G.wet * 100) + '%', 24, hy + 20, { size: D.T.small, weight: 700, color: '#1f5fa0' });
       }
       if (CK.lastSave && CK.time - CK.lastSave < 2.5) {
         ctx.globalAlpha = Math.min(1, (2.5 - (CK.time - CK.lastSave)) * 2);
         D.cardboard(ctx, W - 64, H - 100, 40, 30, { r: 4, lw: 2.5 });
-        D.text(ctx, 'saved', W - 44, H - 78, { size: 11, weight: 700, align: 'center', color: '#5b3a1e' });
+        D.text(ctx, 'saved', W - 44, H - 78, { size: 12, weight: 700, align: 'center', color: D.C.text });
         ctx.globalAlpha = 1;
       }
-      if (!CK.Touch.enabled) D.text(ctx, CK.coop ? 'P1: WASD + Space · P2: Arrows + Enter · Esc menu · M sound' : 'Arrows/WASD move · Z/Space talk · Esc menu · M sound', W - 16, H - 12, { size: 13, align: 'right', color: 'rgba(255,255,255,.9)', outline: 'rgba(60,30,10,.6)', ow: 3 });
+      // controls reminder: on a paper strip so it reads over any scenery, then it steps aside
+      // after the first few seconds in a place (Esc still lists everything)
+      const ha = U.clamp((14 - this.t) / 1.5, 0, 1);
+      if (!CK.Touch.enabled && ha > 0 && CK.Scenes.top() === this) {
+        const hint = CK.coop ? 'P1: WASD + Space  ·  P2: Arrows + Enter  ·  Esc menu  ·  M sound' : 'Arrows/WASD move  ·  Z/Space talk  ·  Esc menu  ·  M sound';
+        const hw = D.measure(ctx, hint, D.T.small, 600) + 28;
+        ctx.globalAlpha = ha;
+        D.rr(ctx, W - 12 - hw, H - 36, hw, 26, 13); ctx.fillStyle = 'rgba(255,250,240,0.85)'; ctx.fill();
+        D.text(ctx, hint, W - 12 - hw / 2, H - 18, { size: D.T.small, align: 'center', color: D.C.text });
+        ctx.globalAlpha = 1;
+      }
     }
   }
   CK.Overworld = Overworld;

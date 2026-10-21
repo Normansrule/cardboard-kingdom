@@ -9,7 +9,15 @@
     ink: '#4a2c17', tape: '#f3e6b8', paper: '#fffaf0',
     red: '#ef6b6b', blue: '#5aa9e6', green: '#6cc56c', yellow: '#ffd25a', pink: '#ff9ec7',
     purple: '#a68be6', water: '#4cc2ea', waterD: '#2a8fc0', silver: '#c9d3e0', night: '#1d1847',
+    // interface tokens: every menu, box and label pulls from these instead of its own hex
+    sheet: '#fff4dc', sheetHi: '#fff0b8', scrim: 'rgba(30,15,5,0.55)',
+    text: '#3d2412', textSoft: '#6b4a2a', label: '#b23a32',
+    off: '#e9dfcf', offText: '#6e5d4b',
   });
+  // type scale (canvas px at 960x540). Nothing readable goes below `small`.
+  D.T = { display: 70, title: 30, heading: 24, body: 20, ui: 17, small: 14 };
+  // true when the player (or their system) asked for less movement
+  D.calm = () => !!(CK.reduceMotion && CK.reduceMotion());
 
   // ------------------------------------------------------------ primitives
   D.rr = function (ctx, x, y, w, h, r) {
@@ -268,6 +276,19 @@
     return out;
   };
 
+  // like D.wrap, but evens out the lines so a short paragraph never ends on one lonely word
+  D.balance = function (ctx, s, maxW, size, weight) {
+    const n = D.wrap(ctx, s, maxW, size, weight).length;
+    if (n < 2) return D.wrap(ctx, s, maxW, size, weight);
+    let lo = maxW / 2, hi = maxW;
+    for (let i = 0; i < 10; i++) {
+      const mid = (lo + hi) / 2;
+      if (D.wrap(ctx, s, mid, size, weight).length > n) lo = mid;
+      else hi = mid;
+    }
+    return D.wrap(ctx, s, hi, size, weight);
+  };
+
   D.panel = function (ctx, x, y, w, h, o = {}) {
     ctx.save();
     ctx.fillStyle = 'rgba(40,20,5,0.25)';
@@ -283,28 +304,41 @@
       ctx.stroke();
       ctx.setLineDash([]);
     }
-    if (o.tape !== false && w > 80) {
+    // tape only on panels big enough that it lands on the border, not on the words
+    if (o.tape !== false && w > 80 && h > 60) {
       D.tape(ctx, x - 10, y - 4, 40, 14, -0.6, 0.8);
       D.tape(ctx, x + w - 30, y + h - 10, 40, 14, -0.6, 0.8);
     }
   };
 
   D.button = function (ctx, x, y, w, h, label, o = {}) {
-    const hov = o.hover;
-    const col = o.disabled ? '#bfae97' : o.color || (hov ? C.yellow : C.paper);
-    const dy = hov && !o.disabled ? -2 : 0;
-    ctx.fillStyle = 'rgba(40,20,5,0.3)';
-    D.rr(ctx, x + 2, y + 4, w, h, 9);
-    ctx.fill();
+    const hov = o.hover, off = o.disabled;
+    const col = off ? C.off : o.color || (hov ? C.yellow : C.paper);
+    // a mouse held down on the button sinks it onto its shadow, so a click feels heard
+    const M = CK.Input && CK.Input.mouse;
+    const held = !off && M && M.down && D.inRect(M.x, M.y, x, y, w, h);
+    const dy = held ? 2 : hov && !off ? -2 : 0;
+    if (!off) {
+      ctx.fillStyle = 'rgba(40,20,5,0.3)';
+      D.rr(ctx, x + 2, y + 4, w, h, 9);
+      ctx.fill();
+    }
     D.rr(ctx, x, y + dy, w, h, 9);
     ctx.fillStyle = col;
     ctx.fill();
-    ctx.strokeStyle = C.ink;
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = off ? C.offText : C.ink;
+    ctx.lineWidth = off ? 2 : 3;
+    // disabled reads as "not yet" by shape too (dashed edge, flat), not just by colour
+    if (off) ctx.setLineDash([6, 4]);
     ctx.stroke();
+    ctx.setLineDash([]);
     D.text(ctx, label, x + w / 2, y + dy + h / 2 + (o.size || 18) * 0.36, {
-      size: o.size || 18, align: 'center', color: o.disabled ? '#7d6a55' : C.ink,
+      size: o.size || 18, align: 'center', color: off ? C.offText : C.ink,
     });
+  };
+  // a drawn chevron for "this value can change" (used instead of ◀ ▶ text glyphs)
+  D.chevron = function (ctx, x, y, dir, col) {
+    D.poly(ctx, [x + dir * 4, y, x - dir * 3, y - 5, x - dir * 3, y + 5], col || C.ink);
   };
   D.inRect = (mx, my, x, y, w, h) => mx >= x && mx <= x + w && my >= y && my <= y + h;
 

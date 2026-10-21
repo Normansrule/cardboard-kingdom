@@ -1,6 +1,6 @@
 // Cardboard Kingdom - Easy Play: settings, Story Mode, running, and the goal marker.
 //  * Settings (title screen and pause menu): Story Mode, auto-timed hits, text speed, goal marker,
-//    always run, screen shake. Saved in the browser, separate from the save game.
+//    always run, screen shake, reduce motion. Saved in the browser, separate from the save game.
 //  * Goal marker: a bouncing golden arrow over whoever you need to talk to next, or an arrow at
 //    the edge of the screen pointing the way (with a step count) when they're off screen.
 //  * Hold Shift to run.
@@ -13,7 +13,7 @@
   const stroke = (ctx, lw, col) => { ctx.strokeStyle = col || C.ink; ctx.lineWidth = lw || 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke(); };
 
   // ================================================================ SETTINGS
-  const DEFAULTS = { story: false, autoTime: false, text: 1, goal: true, run: false, shake: true };
+  const DEFAULTS = { story: false, autoTime: false, text: 1, goal: true, run: false, shake: true, motion: 0 };
   const KEY = 'cardboard-kingdom-settings';
   const load = () => {
     try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); }
@@ -22,7 +22,11 @@
   CK.saveSettings = function () { try { localStorage.setItem(KEY, JSON.stringify(CK.settings)); } catch (e) { /* storage blocked: settings just last this session */ } };
   // used by the dialogue box, battles and the overworld
   CK.textSpeed = () => [1, 2.2, 99][CK.settings.text] || 1;
-  CK.shakeK = () => (CK.settings.shake ? 1 : 0);
+  // Reduce motion: 0 = follow the computer's own setting, 1 = on, 2 = off
+  const sysCalm = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+  CK.reduceMotion = () => CK.settings.motion === 1 || (CK.settings.motion === 0 && sysCalm());
+  CK.shakeK = () => (CK.settings.shake && !CK.reduceMotion() ? 1 : 0);
+  const MOTION = ['Auto', 'On', 'Off'];
 
   const TEXT = ['Normal', 'Fast', 'Instant'];
   const OPTIONS = [
@@ -32,13 +36,14 @@
     { id: 'goal', label: 'Goal marker', desc: 'A golden arrow that points to where the story goes next.', val: () => (CK.settings.goal ? 'On' : 'Off'), next: () => { CK.settings.goal = !CK.settings.goal; } },
     { id: 'run', label: 'Always run', desc: 'Move faster everywhere. (You can also hold Shift to run.)', val: () => (CK.settings.run ? 'On' : 'Off'), next: () => { CK.settings.run = !CK.settings.run; } },
     { id: 'shake', label: 'Screen shake', desc: 'Turn off if the shaking bothers you.', val: () => (CK.settings.shake ? 'On' : 'Off'), next: () => { CK.settings.shake = !CK.settings.shake; } },
+    { id: 'motion', label: 'Reduce motion', desc: 'Calmer menus and pop-ups, no screen shake. Auto follows your computer\'s own setting.', val: () => MOTION[CK.settings.motion || 0] + (CK.settings.motion ? '' : CK.reduceMotion() ? ' (on)' : ' (off)'), on: () => CK.reduceMotion(), next: (d) => { CK.settings.motion = ((CK.settings.motion || 0) + (d || 1) + 3) % 3; } },
     { id: 'sound', label: 'Sound', desc: 'Music and sound effects. (M also toggles.)', val: () => (CK.Audio.muted ? 'Off' : 'On'), next: () => CK.Audio.toggleMute() },
   ];
   CK.SettingsOptions = OPTIONS;
 
   class SettingsScreen {
     constructor() { this.transparent = true; this.sel = 0; this.t = 0; }
-    rect(i) { return [W / 2 - 300, 100 + i * 45, 600, 38]; }
+    rect(i) { return [W / 2 - 300, 88 + i * 40, 600, 34]; }
     update(dt) {
       this.t += dt;
       const n = OPTIONS.length + 1;
@@ -59,22 +64,26 @@
     }
     draw(ctx) {
       ctx.fillStyle = 'rgba(30,15,5,0.6)'; ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 330, 24, 660, H - 48, { fill: '#fffaf0' });
-      D.text(ctx, 'Settings', W / 2, 70, { size: 28, weight: 700, align: 'center' });
+      D.panel(ctx, W / 2 - 330, 16, 660, H - 32, { fill: '#fffaf0' });
+      D.text(ctx, 'Settings', W / 2, 62, { size: 28, weight: 700, align: 'center', color: C.text });
       OPTIONS.forEach((o, i) => {
         const [x, y, w, h] = this.rect(i), sel = i === this.sel;
-        D.rr(ctx, x, y, w, h, 10); ctx.fillStyle = sel ? '#fff0b8' : '#fff4dc'; ctx.fill(); stroke(ctx, sel ? 2.5 : 1.5);
-        D.text(ctx, o.label, x + 18, y + 25, { size: 17, weight: 700 });
-        const v = o.val(), on = v !== 'Off';
-        D.rr(ctx, x + w - 128, y + 5, 112, 28, 14); ctx.fillStyle = on ? '#9ad07a' : '#e2d6c2'; ctx.fill(); stroke(ctx, 2);
-        D.text(ctx, (sel ? '◀ ' : '') + v + (sel ? ' ▶' : ''), x + w - 72, y + 25, { size: 15, weight: 700, align: 'center', color: on ? '#24501c' : '#6a5a4a' });
+        D.rr(ctx, x, y, w, h, 10); ctx.fillStyle = sel ? C.sheetHi : C.sheet; ctx.fill(); stroke(ctx, sel ? 2.5 : 1.5);
+        D.text(ctx, o.label, x + 18, y + 23, { size: D.T.ui, weight: 700, color: C.text });
+        const v = o.val(), on = o.on ? o.on() : v !== 'Off';
+        const pw = 132, px = x + w - pw - 12;
+        D.rr(ctx, px, y + 4, pw, 26, 13); ctx.fillStyle = on ? '#9ad07a' : '#e2d6c2'; ctx.fill(); stroke(ctx, 2);
+        const vc = on ? '#24501c' : '#6a5a4a';
+        D.text(ctx, v, px + pw / 2, y + 22, { size: 15, weight: 700, align: 'center', color: vc });
+        // drawn arrows on the selected row say "left/right changes this"
+        if (sel) { D.chevron(ctx, px + 14, y + 17, -1, vc); D.chevron(ctx, px + pw - 14, y + 17, 1, vc); }
       });
       const [bx, by] = this.rect(OPTIONS.length);
-      D.button(ctx, bx + 200, by + 4, 200, 40, 'Done', { hover: this.sel === OPTIONS.length, size: 18 });
+      D.button(ctx, bx + 200, by + 6, 200, 38, 'Done', { hover: this.sel === OPTIONS.length, size: 18 });
       const o = OPTIONS[this.sel];
       if (o) {
-        const lines = D.wrap(ctx, o.desc, 560, 15, 500);
-        lines.forEach((l, i) => D.text(ctx, l, W / 2, H - 58 + i * 19, { size: 15, align: 'center', color: '#7a5434' }));
+        const lines = D.balance(ctx, o.desc, 560, 15, 500);
+        lines.slice(0, 2).forEach((l, i) => D.text(ctx, l, W / 2, H - 62 + i * 20, { size: 15, align: 'center', color: C.textSoft }));
       }
     }
   }
