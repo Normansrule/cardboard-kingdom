@@ -9,8 +9,8 @@
     CK.boot(new CK.TitleScene());
     document.getElementById('game').focus();
   }
-  // wait (briefly) for the rounded font so text measures correctly
-  const fontReady = document.fonts && document.fonts.load ? document.fonts.load('600 20px Fredoka') : Promise.resolve();
+  // wait (briefly) for both faces so text measures correctly on the first frame
+  const fontReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('600 20px Nunito'), document.fonts.load('400 30px "Bagel Fat One"')]) : Promise.resolve();
   Promise.race([fontReady, new Promise((r) => setTimeout(r, 1500))]).then(start, start);
 
   // debug helpers for testing: CK.debug.chapter('fall'), CK.debug.puzzle('fall_bridge')

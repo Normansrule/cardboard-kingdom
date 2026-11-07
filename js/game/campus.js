@@ -293,9 +293,9 @@
     }
     draw(ctx) {
       const G = CK.G;
-      ctx.fillStyle = 'rgba(30,15,5,0.6)';
+      ctx.fillStyle = D.C.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 270, 30, 540, 480, { fill: '#fff4dc' });
+      D.panel(ctx, W / 2 - 270, 30, 540, 480, { fill: D.C.sheet });
       D.text(ctx, "Nib's Swap Shop", W / 2, 76, { size: 28, weight: 700, align: 'center' });
       D.text(ctx, `"Everything's made of something else!"   Scraps: ${G.scraps}   Juice boxes: ${G.snacks}`, W / 2, 108, { size: 14, weight: 600, align: 'center', color: '#7a5434' });
       const items = this.items();
@@ -487,7 +487,7 @@
       this.drawBoat(ctx, 200, this.laneY(3), '#c99561', this.me.water, true);
       this.parts.draw(ctx);
       // progress bar
-      D.panel(ctx, 20, 12, W - 40, 44, { tape: false, fill: '#fff4dc' });
+      D.panel(ctx, 20, 12, W - 40, 44, { tape: false, fill: D.C.sheet });
       D.text(ctx, 'Cardboard Boat Regatta', 36, 40, { size: 18, weight: 700 });
       const bx = 280, bw = W - 340;
       D.rr(ctx, bx, 26, bw, 14, 7); ctx.fillStyle = '#d9c3a3'; ctx.fill();
@@ -496,7 +496,7 @@
       if (this.state === 'build') {
         ctx.fillStyle = 'rgba(20,30,50,0.45)';
         ctx.fillRect(0, 0, W, H);
-        D.panel(ctx, W / 2 - 290, 100, 580, 380, { fill: '#fff4dc' });
+        D.panel(ctx, W / 2 - 290, 100, 580, 380, { fill: D.C.sheet });
         D.text(ctx, 'Build your boat', W / 2, 146, { size: 28, weight: 700, align: 'center' });
         D.text(ctx, 'Water is the enemy of cardboard. Choose your hull.', W / 2, 172, { size: 15, align: 'center', color: '#7a5434' });
         this.hullRects().forEach((r, i) => {
@@ -510,7 +510,7 @@
       } else if (this.state === 'race') {
         // rhythm meter: green zone = a full-power stroke
         const since = Math.min(1.2, this.t - this.me.last);
-        D.panel(ctx, W / 2 - 160, H - 66, 320, 52, { tape: false, fill: '#fff4dc' });
+        D.panel(ctx, W / 2 - 160, H - 66, 320, 52, { tape: false, fill: D.C.sheet });
         D.rr(ctx, W / 2 - 140, H - 50, 280, 12, 6); ctx.fillStyle = '#d9c3a3'; ctx.fill();
         D.rr(ctx, W / 2 - 140 + 280 * (0.45 / 1.2), H - 50, 280 * (0.4 / 1.2), 12, 6); ctx.fillStyle = '#8fd08a'; ctx.fill();
         D.line(ctx, W / 2 - 140 + 280 * (since / 1.2), H - 56, W / 2 - 140 + 280 * (since / 1.2), H - 32, D.C.ink, 4);
@@ -519,7 +519,7 @@
       } else {
         ctx.fillStyle = 'rgba(20,30,50,0.4)';
         ctx.fillRect(0, 0, W, H);
-        D.panel(ctx, W / 2 - 220, 170, 440, 180, { fill: '#fff4dc' });
+        D.panel(ctx, W / 2 - 220, 170, 440, 180, { fill: D.C.sheet });
         D.text(ctx, this.place === 1 ? '1st place!' : ['', '', '2nd place!', '3rd place!', '4th place!'][this.place], W / 2, 230, { size: 40, weight: 700, align: 'center', color: this.place === 1 ? '#c2410c' : '#3d2412' });
         D.text(ctx, this.hull.leak ? `Hull: ${this.hull.name}. ${Math.round(this.me.water * 100)}% soaked.` : 'Wax-sealed hull: bone dry!', W / 2, 270, { size: 16, align: 'center', color: '#7a5434' });
         if (this.t - this.doneT > 1) D.text(ctx, 'Click / Z to continue', W / 2, 320, { size: 14, align: 'center', color: '#7a5434' });

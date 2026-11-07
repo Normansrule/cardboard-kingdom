@@ -1,5 +1,7 @@
 # How v2.12 "Reedwhistle Marsh" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.12.0"><img src="../../buttons/play.svg" alt="Play version 2.12.0 in your browser" height="64"></a> &nbsp;[Play 2.12.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.12.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image is a capture from the real game while it was being built, in order.
 
 **This round:** an Animal Crossing staple, **fishing**, wired into Jules's story (Jules "wants to count fish and make sure they're okay"). Chapter 12 then takes them to a marsh where the fish are disappearing, with a new puzzle family from the [design direction](../../../DESIGN_DIRECTION.md): putting the bends back into a straightened river.

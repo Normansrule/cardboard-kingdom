@@ -9,13 +9,43 @@
     ink: '#4a2c17', tape: '#f3e6b8', paper: '#fffaf0',
     red: '#ef6b6b', blue: '#5aa9e6', green: '#6cc56c', yellow: '#ffd25a', pink: '#ff9ec7',
     purple: '#a68be6', water: '#4cc2ea', waterD: '#2a8fc0', silver: '#c9d3e0', night: '#1d1847',
-    // interface tokens: every menu, box and label pulls from these instead of its own hex
-    sheet: '#fff4dc', sheetHi: '#fff0b8', scrim: 'rgba(30,15,5,0.55)',
-    text: '#3d2412', textSoft: '#6b4a2a', label: '#b23a32',
-    off: '#e9dfcf', offText: '#6e5d4b',
+    // interface tokens ("Kingdom Post", mirrored in css/post.css): every menu, box and label
+    // pulls from these instead of its own hex
+    sheet: '#fbf3e2', sheetHi: '#efe8fb', line: '#e3d3b4', scrim: 'rgba(20,32,74,0.58)',
+    text: '#2a2140', textSoft: '#5a5070', label: '#b8322a',
+    off: '#e9e2d3', offText: '#6a6070',
+    violet: '#5b3fa0', violetD: '#3d2875', airRed: '#e2483a', airBlue: '#2c56a3', navy: '#141d3d',
   });
+  // Paper for the interface. Day is a cream postcard; night is the same card under a lamp.
+  // Menus, dialogue, the HUD and buttons read D.pal(); world art never does.
+  const PAPER = {
+    day: {
+      sheet: C.sheet, sheetHi: C.sheetHi, line: C.line, text: C.text, soft: C.textSoft, label: C.label,
+      accent: C.violet, accentD: C.violetD, onAccent: '#ffffff', edge: C.text, scrim: C.scrim, off: C.off, offText: C.offText,
+      shadow: 'rgba(20,32,74,0.28)',
+    },
+    night: {
+      sheet: '#26335f', sheetHi: '#33427a', line: '#3a4777', text: '#f6ecd6', soft: '#c9c2dc', label: '#ffb4a8',
+      accent: '#b9a4ff', accentD: '#7d68c9', onAccent: '#1b1440', edge: '#0d1430', scrim: 'rgba(8,12,30,0.62)', off: '#2e3a66', offText: '#c9c2dc',
+      shadow: 'rgba(0,0,0,0.4)',
+    },
+  };
+  D.PAPER = PAPER;
+  // Paper setting: 0 = Auto (follows day and night in the game), 1 = always day, 2 = always night
+  D.night = function () {
+    const p = (CK.settings && CK.settings.paper) || 0;
+    if (p) return p === 2;
+    const ow = CK.OW;
+    return !!(ow && ow.night && CK.Scenes && CK.Scenes.stack && CK.Scenes.stack.includes(ow));
+  };
+  D.pal = () => (D.night() ? PAPER.night : PAPER.day);
   // type scale (canvas px at 960x540). Nothing readable goes below `small`.
   D.T = { display: 70, title: 30, heading: 24, body: 20, ui: 17, small: 14 };
+  // Two voices: Bagel Fat One for headings and stamps (big and bold, or asked for), Nunito for reading.
+  D.font = function (size, weight, o) {
+    const disp = o && o.display != null ? o.display : size >= 26 && (weight || 600) >= 700;
+    return disp ? `400 ${size}px ${CK.DISPLAY}` : `${weight || 600} ${size}px ${CK.FONT}`;
+  };
   // true when the player (or their system) asked for less movement
   D.calm = () => !!(CK.reduceMotion && CK.reduceMotion());
 
@@ -242,7 +272,7 @@
 
   D.text = function (ctx, s, x, y, o = {}) {
     const size = o.size || 20;
-    ctx.font = `${o.weight || 600} ${size}px ${CK.FONT}`;
+    ctx.font = D.font(size, o.weight, o);
     ctx.textAlign = o.align || 'left';
     ctx.textBaseline = o.base || 'alphabetic';
     if (o.outline) {
@@ -254,12 +284,12 @@
     ctx.fillStyle = o.color || C.ink;
     ctx.fillText(s, x, y);
   };
-  D.measure = function (ctx, s, size, weight) {
-    ctx.font = `${weight || 600} ${size}px ${CK.FONT}`;
+  D.measure = function (ctx, s, size, weight, o) {
+    ctx.font = D.font(size, weight, o);
     return ctx.measureText(s).width;
   };
   D.wrap = function (ctx, s, maxW, size, weight) {
-    ctx.font = `${weight || 600} ${size}px ${CK.FONT}`;
+    ctx.font = D.font(size, weight);
     const out = [];
     for (const para of String(s).split('\n')) {
       const words = para.split(' ');
@@ -289,51 +319,136 @@
     return D.wrap(ctx, s, hi, size, weight);
   };
 
+  // A postcard: cream card, ink edge, a soft shadow that falls down and to the right.
+  // o.theme follows day/night paper; o.airmail adds the red-and-blue border; o.lines rules it like a letter.
   D.panel = function (ctx, x, y, w, h, o = {}) {
+    const P = o.theme ? D.pal() : PAPER.day;
+    const fill = o.fill || P.sheet, r = o.r == null ? 8 : o.r;
     ctx.save();
-    ctx.fillStyle = 'rgba(40,20,5,0.25)';
-    D.rr(ctx, x + 4, y + 5, w, h, 10);
+    ctx.fillStyle = P.shadow;
+    D.rr(ctx, x + 3, y + 6, w, h, r);
     ctx.fill();
-    ctx.restore();
-    D.cardboard(ctx, x, y, w, h, { r: 10, fill: o.fill || C.cardL, seed: o.seed, lw: 3, horizontal: true });
-    if (o.inner !== false && h > 40 && w > 40) {
-      ctx.strokeStyle = 'rgba(120,70,30,0.25)';
-      ctx.setLineDash([6, 5]);
-      ctx.lineWidth = 2;
-      D.rr(ctx, x + 7, y + 7, w - 14, h - 14, 6);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    // tape only on panels big enough that it lands on the border, not on the words
-    if (o.tape !== false && w > 80 && h > 60) {
-      D.tape(ctx, x - 10, y - 4, 40, 14, -0.6, 0.8);
-      D.tape(ctx, x + w - 30, y + h - 10, 40, 14, -0.6, 0.8);
-    }
-  };
-
-  D.button = function (ctx, x, y, w, h, label, o = {}) {
-    const hov = o.hover, off = o.disabled;
-    const col = off ? C.off : o.color || (hov ? C.yellow : C.paper);
-    // a mouse held down on the button sinks it onto its shadow, so a click feels heard
-    const M = CK.Input && CK.Input.mouse;
-    const held = !off && M && M.down && D.inRect(M.x, M.y, x, y, w, h);
-    const dy = held ? 2 : hov && !off ? -2 : 0;
-    if (!off) {
-      ctx.fillStyle = 'rgba(40,20,5,0.3)';
-      D.rr(ctx, x + 2, y + 4, w, h, 9);
+    D.rr(ctx, x, y, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    if (o.airmail && w > 60 && h > 40) {
+      ctx.save();
+      ctx.clip();
+      D.airmail(ctx, x, y, w, h, fill);
+      ctx.restore();
+      D.rr(ctx, x + 7, y + 7, w - 14, h - 14, Math.max(2, r - 4));
+      ctx.fillStyle = fill;
       ctx.fill();
     }
-    D.rr(ctx, x, y + dy, w, h, 9);
-    ctx.fillStyle = col;
+    if (o.lines) {
+      ctx.strokeStyle = P.line;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let ly = y + (o.lineTop || 40); ly < y + h - 12; ly += o.lines) { ctx.moveTo(x + 16, ly); ctx.lineTo(x + w - 16, ly); }
+      ctx.stroke();
+    }
+    D.rr(ctx, x, y, w, h, r);
+    ctx.strokeStyle = o.edge || P.edge;
+    ctx.lineWidth = o.lw || 2.5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    ctx.restore();
+  };
+  // diagonal airmail stripes filling a rect (call inside a clip)
+  D.airmail = function (ctx, x, y, w, h, gapCol) {
+    ctx.fillStyle = gapCol || C.sheet;
+    ctx.fillRect(x, y, w, h);
+    const cols = [C.airRed, null, C.airBlue, null], widths = [14, 7, 14, 7];
+    let k = 0;
+    for (let s = -h; s < w + h; k++) {
+      const c = cols[k % 4], sw = widths[k % 4];
+      if (c) D.poly(ctx, [x + s, y + h, x + s + sw, y + h, x + s + sw + h, y, x + s + h, y], c);
+      s += sw;
+    }
+  };
+  // A perforated stamp. o.holes is the colour behind it; o.art(ctx, ix, iy, iw, ih) draws the picture.
+  D.stamp = function (ctx, x, y, w, h, o = {}) {
+    const hole = o.hole || 3.2, pitch = o.pitch || 9;
+    ctx.save();
+    ctx.fillStyle = o.shadow || 'rgba(20,32,74,0.25)';
+    ctx.fillRect(x + 2, y + 4, w, h);
+    ctx.fillStyle = o.paper || '#ffffff';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = o.holes || C.sheet;
+    ctx.beginPath();
+    for (let px = x; px <= x + w + 0.1; px += pitch) { ctx.moveTo(px + hole, y); ctx.arc(px, y, hole, 0, Math.PI * 2); ctx.moveTo(px + hole, y + h); ctx.arc(px, y + h, hole, 0, Math.PI * 2); }
+    for (let py = y + pitch; py < y + h - 0.1; py += pitch) { ctx.moveTo(x + hole, py); ctx.arc(x, py, hole, 0, Math.PI * 2); ctx.moveTo(x + w + hole, py); ctx.arc(x + w, py, hole, 0, Math.PI * 2); }
     ctx.fill();
-    ctx.strokeStyle = off ? C.offText : C.ink;
-    ctx.lineWidth = off ? 2 : 3;
+    const m = o.margin == null ? 7 : o.margin, ix = x + m, iy = y + m, iw = w - m * 2, ih = h - m * 2;
+    ctx.beginPath();
+    ctx.rect(ix, iy, iw, ih);
+    ctx.fillStyle = o.fill || C.sheetHi;
+    ctx.fill();
+    if (o.art) { ctx.save(); ctx.clip(); o.art(ctx, ix, iy, iw, ih); ctx.restore(); }
+    if (o.value) D.text(ctx, o.value, ix + iw - 4, iy + ih - 5, { size: 14, weight: 800, align: 'right', color: C.text });
+    ctx.restore();
+  };
+  // A round postmark with its wavy cancellation lines. k (0..1) is how much ink has landed.
+  D.postmark = function (ctx, cx, cy, r, lines, o = {}) {
+    const col = o.color || C.violet, k = o.k == null ? 1 : o.k;
+    ctx.save();
+    // k > 1 is the moment before the stamp lands: a touch bigger, a touch fainter
+    ctx.globalAlpha *= (o.alpha == null ? 0.88 : o.alpha) * Math.min(1, 1 / k);
+    ctx.translate(cx, cy);
+    ctx.rotate(o.rot == null ? -0.22 : o.rot);
+    ctx.scale(k, k);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = Math.max(2, r * 0.07);
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = Math.max(1, r * 0.03);
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.84, 0, Math.PI * 2); ctx.stroke();
+    const n = lines.length, fs = Math.max(10, Math.round(r * (n > 1 ? 0.26 : 0.34)));
+    lines.forEach((l, i) => D.text(ctx, l, 0, (i - (n - 1) / 2) * fs * 1.15 + fs * 0.36, { size: fs, weight: 800, align: 'center', color: col, display: false }));
+    if (o.waves !== false) {
+      ctx.lineWidth = Math.max(2, r * 0.07);
+      for (let j = -1; j <= 1; j++) {
+        ctx.beginPath();
+        for (let t = 0; t <= 1.0001; t += 0.05) {
+          const wx = r * 1.05 + t * r * 2.2, wy = j * r * 0.34 + Math.sin(t * Math.PI * 4) * r * 0.08;
+          if (t === 0) ctx.moveTo(wx, wy); else ctx.lineTo(wx, wy);
+        }
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  };
+
+  // a speaker's portrait as a stamp on the corner of a postcard
+  D.portraitStamp = function (ctx, who, x, y, mood, holes) {
+    D.stamp(ctx, x, y, 122, 124, { holes, margin: 6, art: (c, ix, iy) => D.portrait(c, who, ix - 1, iy, mood, { bare: true }) });
+  };
+
+  // The one button: an ink-pad key. Selected or hovered fills with postmark violet; held sinks onto its base.
+  D.button = function (ctx, x, y, w, h, label, o = {}) {
+    const P = D.pal(), hov = o.hover, off = o.disabled;
+    const M = CK.Input && CK.Input.mouse;
+    const held = !off && M && M.down && D.inRect(M.x, M.y, x, y, w, h);
+    const base = 4, dy = held ? base - 1 : 0;
+    const fill = off ? P.off : hov ? P.accent : o.color || P.sheet;
+    const edge = off ? P.offText : hov ? P.accentD : P.edge;
+    const r = Math.min(12, h / 2);
+    if (!off) {
+      D.rr(ctx, x, y + base, w, h, r);
+      ctx.fillStyle = edge;
+      ctx.fill();
+    }
+    D.rr(ctx, x, y + dy, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = off ? 2 : 2.5;
     // disabled reads as "not yet" by shape too (dashed edge, flat), not just by colour
     if (off) ctx.setLineDash([6, 4]);
     ctx.stroke();
     ctx.setLineDash([]);
-    D.text(ctx, label, x + w / 2, y + dy + h / 2 + (o.size || 18) * 0.36, {
-      size: o.size || 18, align: 'center', color: off ? C.offText : C.ink,
+    const size = o.size || 18;
+    D.text(ctx, label, x + w / 2, y + dy + h / 2 + size * 0.36, {
+      size, weight: 800, align: 'center', color: off ? P.offText : hov ? P.onAccent : o.color ? C.text : P.text, display: false,
     });
   };
   // a drawn chevron for "this value can change" (used instead of ◀ ▶ text glyphs)
@@ -509,8 +624,10 @@
     }
     D.ellipse(ctx, x - sp, y, r * 0.8, r, o.eyeColor || '#2b1a10');
     D.ellipse(ctx, x + sp, y, r * 0.8, r, o.eyeColor || '#2b1a10');
-    D.circle(ctx, x - sp + r * 0.3, y - r * 0.4, r * 0.35, '#fff');
-    D.circle(ctx, x + sp + r * 0.3, y - r * 0.4, r * 0.35, '#fff');
+    for (const ex of [x - sp, x + sp]) {
+      D.circle(ctx, ex + r * 0.28, y - r * 0.4, r * 0.36, '#fff');
+      D.circle(ctx, ex - r * 0.3, y + r * 0.45, r * 0.15, 'rgba(255,255,255,.85)');
+    }
   }
   D.eyes = eyes;
   function blush(ctx, x, y, sp, r) {

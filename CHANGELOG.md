@@ -1,5 +1,131 @@
 # Changelog
 
+Every version below can be played in your browser from the [versions page](https://normansrule.github.io/cardboard-kingdom/versions.html).
+
+## 2.25.0 — A Kingdom that lives together (2026-11-02)
+
+2.24 made nine villagers into friends. This round makes them part of a community: they need small favours, they know each other, and they have little lives on the map. Before and after: [docs/media/process/v2.25](docs/media/process/v2.25/README.md).
+
+- **Favours.** After their first heart story, each neighbor asks for one small thing, and it sends you into another part of the game: find one of Grandma's paper cranes for Clover, check two signposts for Robin, dig up a treasure and measure the hole for Nib, shake three trees for Ember's colour ideas, sketch two critters for Professor Hoot's Volume Twelve. Nothing expires. When you're done, tell them for hearts and 25 bottle caps, and they let slip something they love.
+- **The Neighborhood Picnic.** Once four neighbors have told you their three-heart stories, Mayor Mossworth offers to host a picnic in Blossom Hollow. Everyone you've met comes, from every season, and they talk to each other: Hoot and his first reader, Nib measuring the Mayor's hat, Mama Burrow feeding Clover's little monster friend. It ends with a group photo you keep on the Neighbors page (press P), a picnic blanket for your patch and 40 bottle caps.
+- **Little lives.** When you're not right beside them, neighbors do their own thing: Robin sorts letters, Bristle's rake sends up leaves, Ember sketches in colour, Mama Burrow knits hearts, Hoot says "aha", Nib counts mouse-lengths, Clover's petals drift and the Mayor's hat shines. Reduce motion turns these off.
+- **The Neighbors page** shows each favour and how far along it is.
+- **Helping Paw challenge** for favours, with a new Helping Paws paint at gold.
+- **Docs.** [docs/CHARACTERS.md](docs/CHARACTERS.md) has who-knows-whom and the favours list.
+
+## 2.24.0 — Neighbors you care about (2026-11-01)
+
+Alek asked for characters people can relate to and care about, cuter and more stylish, like Costume Quest, Terraria or Stardew Valley. So the Kingdom's named villagers are now friends you get to know at your own pace. Before and after: [docs/media/process/v2.24](docs/media/process/v2.24/README.md).
+
+- **Hearts for nine neighbors.** Clover, Robin Redbox and Mayor Mossworth in Blossom Hollow, Dabble and Nib on Sunpatch Shores, Ember, Bristle and Professor Hoot in Amberleaf Woods, and Mama Burrow on Frostfold Peak each have 0 to 5 hearts. A chat each visit and a present each visit fill them. Visits are counted by place (and day or night), never by real days, so nothing is missable.
+- **Presents.** Give any spare garden piece. Everyone loves three things and likes five more, and their hint says what kind of thing. What you find out shows on their page.
+- **27 heart stories.** At one, three and five hearts each neighbor shares something real and ordinary: Clover waits up for her dad on night shift, Robin has delivered 11,406 letters and never got one, Nib's castle got knocked over by the big kids, Dabble hasn't visited her sister fifteen minutes up the beach, Bristle won't ask for help, Hoot has never seen a drain run clear. At five hearts they do the brave thing themselves.
+- **Keepsakes.** Every five-heart story ends with a hat you can't get anywhere else: a Paper Boat Hat, a Postie's Cap, a top hat, a juice-stand visor, a yogurt-pot hard hat, a beret, a prickle hood, reading glasses and knitted earmuffs. Befriend everyone for the new Sweetheart paint (Best Friends challenge).
+- **Signature looks.** You can tell the neighbors apart from across the map: Robin's mail bag, Bristle's rake, Ember's sketchbook, Hoot's glasses, Mama Burrow's knitting, Dabble's juice jug, Nib's pencil and tape measure. Clover carries her own lantern after her last story. Friends at three hearts or more send a heart bubble when you walk up, and a heart floats over anyone with a story ready.
+- **The Neighbors page.** Pause → Neighbors: everyone's wants, fears, quirk and secret (at three hearts), what they love, and their stories so far, which you can re-read.
+- **More to do.** Two new Odd Jobs (catch up with neighbors, give a present they like) and the Best Friends challenge.
+- **Art and character bible.** [docs/ART_BIBLE.md](docs/ART_BIBLE.md) sets out the shape language, colour and what makes a character cute and someone you care about. [docs/CHARACTERS.md](docs/CHARACTERS.md) has the neighbors' table.
+- **Small fixes.** The Catalogue fits ten items per row, and the pause menu has room for the new page.
+
+## 2.23.0 — Treasure and a patch of your own (2026-10-27)
+
+Two new reasons to wander, in the spirit of Animal Crossing: a garden to make your own, and treasure maps that send you back to places you've been. Still no real money, timers or streaks. Before and after: [docs/media/process/v2.23](docs/media/process/v2.23/README.md).
+
+- **Your patch.** Grandma Rosie's old garden sits by the road in Blossom Hollow, with a picket fence and a sign that says PATCH in very old crayon. Decorate its 15 squares: walk up, press Z, and use the arrows, Q and E to place or pick up pieces. Lanterns glow at night.
+- **Critters come to visit.** Every critter you've sketched has favourite things (bees like beehives, owlets like birdhouses, frogs like birdbaths). When your patch has something a critter likes, it may be there when you arrive, and night critters come at night. Say hi for bottle caps the first time each kind visits. The Garden page tells you who likes what.
+- **Buried treasure.** Two treasures are buried in each of the ten Kingdom places. Their maps are tucked behind signposts and left at landmarks. Each map is a sketch of the real spot on old paper, with a red X and a hint like "From the well: 3 steps east". Find the X on the ground and dig. Every tin holds 25 bottle caps and a garden piece, and six hold things you can't get anywhere else (a gnome, a sundial, a toadstool house, a wind chime, a star telescope and the Treasure Bandana).
+- **Tansy's Garden page.** A sixth tab in the Kingdom Book sells 26 garden pieces for bottle caps and shows your patch and its visitors. The Places page counts treasure, and Z on a place shows its treasure map.
+- **New skins.** Patched Denim and the Bobble Beanie are for sale. Old Map, Garden Party, the Gardener's Straw Hat and the Treasure Bandana can only be earned.
+- **More challenges and Odd Jobs.** Treasure Hunter, Green Thumb and Good Host, plus jobs to find a map, dig up treasure, add to your patch and say hi to visitors.
+- **The world generator** now leaves a clear plot for the patch and picks two quiet spots per place for treasure, and it draws eight new garden pieces.
+
+## 2.22.0 — A kingdom with things to do (2026-10-26)
+
+The places felt empty and open-ended, so this round lays them out properly and gives you reasons to linger, without any real money or nagging. Before and after: [docs/media/process/v2.22](docs/media/process/v2.22/README.md).
+
+- **Every place is laid out by a world generator.** Inspired by mapgen4 and Azgaar's map generator, each place gets moisture and lushness fields that decide where the meadows, groves, wet patches and dry ground are. A small wave function collapse pass (after WaveFunctionCollapse's simple tiled model) picks the detail: tall grass, reeds, hedges that join up, stumps, logs, mushrooms and flower beds. Each kit fits its season and town, so the beach has surfboards and buoys, autumn has hay bales and pumpkins, winter has sleds and snowmen, and Thimble Row has spools and pins. Every solid prop is checked with a flood fill so it never blocks a path.
+- **Front yards, signposts, landmarks and trails.** Houses get a mailbox and sometimes a yard item, crossroads get signposts that tell you where things are, and quiet corners get landmarks (picnic spots, wells, lookouts, cairns, snow forts) with stepping-stone trails leading to them. Lookouts show a map of the place with any paper cranes you haven't found.
+- **Critters to sketch.** 20 critters live in the habitats they like. Walk up gently, since running startles them. Sketching one adds it to the Field Guide. In Story Mode they don't run off.
+- **Paper cranes.** Three are folded away in each of ten places. Each one carries a wish from someone in the Kingdom.
+- **Odd Jobs and challenges.** Neighbours post small jobs (catch some fish, sketch a critter, visit a landmark). They never expire, and new ones come after a rest at the campfire. 14 challenges have bronze, silver and gold tiers.
+- **The Kingdom Book.** A new pause-menu book with tabs for Odd Jobs, Challenges, the Field Guide, Places and the Catalogue.
+- **Skins and hats.** The Catalogue has 15 paint patterns (polka dots, gingham, starry night and more) that paint both the costume and the giant without covering faces, and 16 hats that sit on the costume. Pay with bottle caps from battles, sketches, cranes and jobs. Some paints and hats come only from gold challenges.
+- **Fair play.** No microtransactions, no streaks, no timers. An optional break reminder suggests a stretch (Settings, default 60 minutes). See [docs/PLAYTIME.md](docs/PLAYTIME.md).
+- **Play buttons everywhere.** The README, the website, every release and the new versions page each have a Play button, and every version is playable on its own page.
+
+## 2.21.0 — Villagers potter about (2026-10-26)
+
+Animal Crossing neighbours never just stand there, and in battle the turn menu could hide the very kid whose turn it was. Before and after: [docs/media/process/v2.21](docs/media/process/v2.21/README.md).
+
+- **Villagers potter about.** When you're not with them, villagers take a few steps one way, rest, and wander back. Only villagers with room on both sides do it, and the one your goal arrow points at waits for you under the ring. It's only how they're drawn, so where you talk to them doesn't change, and their speech prompt, mail bubble and "!" follow them. With Reduce motion on they stand still.
+- **Some of them hum.** About half the villagers hum to themselves now and then, with a little music-note bubble.
+- **Your face on your turn.** The battle menu has a round badge with the face of whoever's turn it is, since the menu can sit over their costume. It replaces the "!" bubble from 2.20, which was hard to tell apart between neighbours. Getting hit still shows a sweat drop.
+
+## 2.20.0 — Who's inside the costume (2026-10-26)
+
+The heart of Costume Quest is the kid you can see inside the homemade costume. In battle our kids' faces were small and didn't react to anything, so this round is about them. Before and after: [docs/media/process/v2.20](docs/media/process/v2.20/README.md).
+
+- **Bigger faces in the costumes.** Every battle costume has a bigger window (the knight's visor, the tower's arch, the cabs of the bulldozer and snowplow, the bridge hut, the lighthouse lantern) with a bigger face behind it. The kite and raincoat faces grew too.
+- **Faces that react.** A hit makes the kid inside wince, wide-eyed, for a moment. On a win everyone in the costumes beams and bounces.
+- **Battle emotes.** A little "!" bubble pops up over whoever's turn it is, and a sweat-drop bubble over a friend who just got hit, in the same style as the villagers' greetings.
+- **Monsters say ouch.** When a hit lands, most monsters squeeze their eyes shut (> <) with a little "oof" mouth before going back to scowling. The Society agents, machines and a few others keep their own faces.
+
+## 2.19.0 — Friendlier on the map (2026-10-25)
+
+The cast got livelier in 2.18, but on the map they were still small enough that the new faces were hard to read. This round brings that life out where you spend most of the game. Before and after: [docs/media/process/v2.19](docs/media/process/v2.19/README.md).
+
+- **Bigger on the map.** Sam, the party and every villager are drawn 18% larger in the overworld, so eyes, blush and poses read at a glance. The "Talk to" tag sits a little higher to match.
+- **Greeting emotes.** Walk up to a villager and a little speech bubble pops up over them: a heart, a music note, a sparkle or a smile. Each villager always has the same one, like an Animal Crossing neighbour. It stays out of the way of the "Talk to" tag, and with Reduce motion on it simply appears and fades.
+- **Talking on the map.** When a villager or a friend speaks in a dialogue, their figure on the map moves its mouth too, not only their stamp.
+- **Sam cheers.** Picking something up or finishing something good ("+3 cardboard scraps", "Armor reinforced!") makes Sam turn to you and throw their arms up for a moment. Messages like "Need 2 more tape" don't.
+
+## 2.18.0 — A livelier cast (2026-10-21)
+
+Alek asked for characters that are more interesting and dynamic, with Kirby, Pikachu, Mario and Costume Quest as references. Before and after: [docs/media/process/v2.18](docs/media/process/v2.18/README.md).
+
+**Faces**
+- Kids and grown-ups have Costume Quest eyes: whites with an ink rim and big pupils that look around. Idle characters glance aside now and then, walkers look where they're going, and villagers' eyes follow you.
+- Animals keep their shiny eyes, which now drift toward whatever they're looking at.
+- Whoever is speaking in a dialogue moves their mouth while the line types out.
+
+**Poses and motion**
+- Every mood has a pose. Happy kids, critters and Sir Corrugate cheer with their arms up, grown-ups wave, a fright throws the arms out, sadness droops, and cross means fists.
+- Characters hop now and then (happy ones bounce more), lean into their walk, and kick up a puff of dust with each step. A fright makes them shiver.
+- Villagers turn to you, watch you and wave as you walk up. Clover's ears twitch.
+- In battle the costume giants breathe, the one whose turn it is bounces, ready to go, and a hit gives them a shake.
+- With Reduce motion on, the poses and expressions stay and the bouncing stops.
+
+**Shapes**
+- Chunky toy shoes with a shine on the toe, a bigger cowlick for Sam, bigger puffs for Jules, and costume helmets that sit higher so you can see the kids' eyes.
+
+## 2.17.0 — The Kingdom Post redesign (2026-10-21)
+
+The game's interface and the website are rebuilt around one idea: everything is mail between you and the Kingdom. Words arrive on postcards, pictures on stamps, and things that happened get a postmark. The system is written up in [DESIGN.md](DESIGN.md). The three concepts and the build captures are in [docs/media/process/v2.17](docs/media/process/v2.17/).
+
+**Website (new)**
+- `index.html` is now a real landing page. Its hero is a postcard ("Wish you were here. Bring a hard hat.") with a real screenshot tucked behind it.
+- **The postcard dam**: Chapter 1's check dam, shrunk to a 3×4 grid, playable with mouse, touch or keyboard. Press Test and the water rises a row at a time. It leaks with a plain explanation, or holds, gets stamped, and flips over to the real puzzle.
+- A stamp sheet of eight places (every stamp is a real screenshot and opens full size), a packing slip of what's in the game, and download options as luggage tags.
+- A day and night desk that follows your computer's setting or the Night desk switch. It works down to phone width, and an automated axe-core accessibility check finds no issues.
+
+**Game interface**
+- New shared tokens in `css/post.css` and `js/engine/draw.js`: airmail-blue desk, cream paper, violet-navy ink, a violet postmark, a 4px spacing scale, and Bagel Fat One plus Nunito (bundled, so offline copies match).
+- Dialogue and choices are airmail postcards with the speaker's portrait as a stamp and their name on a violet tab. Rewards and successful puzzles get a postmark that presses in.
+- The pause menu is a letter ("Dear Sam," ... "P.S." your goal). The journal is ruled notebook paper with an empty state. Settings, the Workbench and the title menu sit on airmail cards.
+- The HUD's place card carries a sun or moon stamp, and saving shows a SAVED postmark.
+- New **Menu paper** setting: Auto (follows the game's day and night), Day or Night.
+
+**Characters**
+- A cuter, cooler cast. Faces have bigger eyes with a warm iris and two catch-lights, softer blush that fades out, and a little "w" smile on the animals. Kids have bigger heads on smaller bodies, and hair has a glossy shine.
+- Everyone got one signature piece: Sam wears an airmail-striped scarf that swings as they walk, Jules has workshop goggles pushed up on their forehead, Sir Corrugate has a violet knight's cape, and Pip has a bigger folded head and a mail satchel. Critters hold their boxes up with little paws.
+- Friendly monster eyes get the same sparkle. Before and after: [docs/media/process/v2.17](docs/media/process/v2.17/README.md).
+
+**Play page**
+- The game moved to `play.html`. It has a "Sorting the post..." loading card, a "The post got soggy" error card with Try again, and a no-JavaScript message. The blank canvas stays hidden until the game starts.
+
+**Build**
+- `tools/build_single.py` inlines the stylesheet and the fonts, so the single-file game still works anywhere. Launchers, `package.sh` and the Pages workflow use `play.html`. `package.sh` no longer puts a stray carriage return in the zip name.
+
 ## 2.16.0 — A design pass (2026-10-20)
 
 An audit of the interface and the docs (hierarchy, spacing, type, colour, motion), then fixes. The cardboard-and-tape look stays; what sits on it got tidier. Before and after: [docs/media/readme/ui/before-after.png](docs/media/readme/ui/before-after.png).

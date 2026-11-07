@@ -984,7 +984,7 @@
       this.parts.draw(ctx);
       let cap = RAISE[0][1];
       for (const [at, s] of RAISE) if (t >= at) cap = s;
-      D.panel(ctx, 120, 30, W - 240, 60, { fill: '#fff4dc', tape: false });
+      D.panel(ctx, 120, 30, W - 240, 60, { fill: D.C.sheet, tape: false });
       D.text(ctx, cap, W / 2, 68, { size: 20, weight: 700, align: 'center', color: '#3d2412' });
       if (t < 10.6) D.text(ctx, 'Z / click to skip', W - 20, H - 14, { size: 12, align: 'right', color: '#fffaf0', outline: C.ink, ow: 3 });
     }
@@ -1151,7 +1151,7 @@
       D.char(ctx, 'jules', 710, 470, { s: 1.4, dir: 'left', mood: 'happy' });
       this.parts.draw(ctx);
       if (this.step < FOLD.length) {
-        D.panel(ctx, W / 2 - 250, 20, 500, 70, { fill: '#fff4dc', tape: false });
+        D.panel(ctx, W / 2 - 250, 20, 500, 70, { fill: D.C.sheet, tape: false });
         D.text(ctx, `Step ${this.step + 1} of ${FOLD.length}: ${FOLD[this.step]}`, W / 2, 50, { size: 20, weight: 700, align: 'center' });
         D.text(ctx, CK.coop ? `${this.turn() ? 'Player 2 (Jules)' : 'Player 1 (Sam)'}: press your action key` : 'Press Z / Space / click', W / 2, 76, { size: 14, align: 'center', color: '#7a5434' });
       }

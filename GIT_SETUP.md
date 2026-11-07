@@ -1,5 +1,7 @@
 # Putting Cardboard Kingdom on GitHub (fresh Ubuntu)
 
+<a href="https://normansrule.github.io/cardboard-kingdom/play.html"><img src="docs/media/buttons/play.svg" alt="Play Cardboard Kingdom in your browser" height="64"></a> <a href="https://normansrule.github.io/cardboard-kingdom/versions.html"><img src="docs/media/buttons/versions.svg" alt="Play any earlier version" height="64"></a>
+
 Every block below is safe to paste into **any** terminal, from **any** folder. They use full paths
 (`~/Downloads`, `~/projects/cardboard-kingdom`) so it doesn't matter where you are.
 
@@ -98,13 +100,13 @@ cd ~/projects/cardboard-kingdom && gh run list --limit 10      # Pages, Check an
 cd ~/projects/cardboard-kingdom && gh run watch                # live view of the newest build
 cd ~/projects/cardboard-kingdom && gh release list             # downloadable versions
 cd ~/projects/cardboard-kingdom && gh repo view --web          # opens the repo (README with GIFs) in your browser
-xdg-open "https://$(gh api user -q .login).github.io/cardboard-kingdom/"   # play the live game
+xdg-open "https://$(gh api user -q .login).github.io/cardboard-kingdom/"   # the website; its Play button opens the game
 ```
 
 ## 5. Play it on this computer
 
 ```bash
-xdg-open ~/projects/cardboard-kingdom/index.html
+xdg-open ~/projects/cardboard-kingdom/play.html
 ```
 
 Or grab the release build exactly as anyone else would:

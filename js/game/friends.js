@@ -568,13 +568,13 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.6)'; ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, 50, 24, W - 100, H - 48, { fill: '#fffaf0' });
+      ctx.fillStyle = D.C.scrim; ctx.fillRect(0, 0, W, H);
+      D.panel(ctx, 50, 24, W - 100, H - 48, { fill: D.C.sheet });
       D.text(ctx, 'Friends', W / 2, 66, { size: 28, weight: 700, align: 'center' });
       const L = this.list();
       L.forEach((id, i) => {
         const P = CK.Friends[id], y = 96 + i * 74, sel = i === this.sel;
-        D.rr(ctx, 70, y, 220, 66, 10); ctx.fillStyle = sel ? '#fff0b8' : '#fff4dc'; ctx.fill(); stroke(ctx, sel ? 2.5 : 1.5);
+        D.rr(ctx, 70, y, 220, 66, 10); ctx.fillStyle = sel ? D.C.sheetHi : D.C.sheet; ctx.fill(); stroke(ctx, sel ? 2.5 : 1.5);
         ctx.save(); D.rr(ctx, 76, y + 6, 54, 54, 8); ctx.clip(); ctx.fillStyle = '#e8dcc8'; ctx.fillRect(76, y + 6, 54, 54);
         D.char(ctx, P.look, P.look === 'pip' ? 100 : 103, y + (P.look === 'pip' ? 52 : 84), Object.assign({ s: P.look === 'pip' ? 1.2 : 1.0, noShadow: true }, P.o)); ctx.restore();
         D.text(ctx, P.name, 140, y + 28, { size: 15, weight: 700 });

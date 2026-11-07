@@ -1,5 +1,7 @@
 # How v2.11 "The Costume Parade" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.11.0"><img src="../../buttons/play.svg" alt="Play version 2.11.0 in your browser" height="64"></a> &nbsp;[Play 2.11.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.11.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image is a capture from the real game while it was being built, in order.
 
 **This round** follows the [design direction](../../../DESIGN_DIRECTION.md)'s rule that *costumes are the main progression*. Each costume should be a homemade walking outfit, a magnificent battle form and an exploration use, built from authored pieces you find by meeting people (no random drops). Two new costumes, Tansy sewing them, and a parade to show them off, in the Costume Quest + Animal Crossing style.

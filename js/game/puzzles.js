@@ -192,7 +192,7 @@
     }
     drawPanel(ctx, extra) {
       const px = 676, pw = 274;
-      D.panel(ctx, px, 14, pw, H - 140 - (this.canBlueprint() ? 48 : 0), { fill: '#fff4dc', tape: false });
+      D.panel(ctx, px, 14, pw, H - 140 - (this.canBlueprint() ? 48 : 0), { fill: D.C.sheet, tape: false });
       let y = 44;
       const text = this.showHint ? this.def.hint : this.def.brief;
       D.text(ctx, this.showHint ? 'Hint' : 'The job', px + 16, y, { size: D.T.small, weight: 700, color: D.C.label });
@@ -224,14 +224,22 @@
       if (this.state === 'result') {
         const a = Math.min(1, (this.t - this.resultT) * 3);
         ctx.globalAlpha = a;
-        ctx.fillStyle = 'rgba(20,30,50,0.45)';
+        ctx.fillStyle = D.C.scrim;
         ctx.fillRect(0, 0, W, H);
-        const body = D.wrap(ctx, this.result.body, 520, 17, 500);
-        const h = 110 + body.length * 22;
-        D.panel(ctx, W / 2 - 290, H / 2 - h / 2, 580, h, { fill: '#fff4dc' });
-        D.text(ctx, this.result.title, W / 2, H / 2 - h / 2 + 46, { size: 30, weight: 700, align: 'center', color: this.success ? '#3f8f3f' : '#c2410c' });
-        body.forEach((l, i) => D.text(ctx, l, W / 2, H / 2 - h / 2 + 80 + i * 22, { size: 17, weight: 500, align: 'center' }));
-        D.text(ctx, this.success ? 'Click / Z to continue' : 'Click / Z to fix your design', W / 2, H / 2 + h / 2 - 18, { size: 14, align: 'center', color: '#7a5434' });
+        const body = D.wrap(ctx, this.result.body, 460, 17, 600);
+        const h = 120 + body.length * 22, top = H / 2 - h / 2;
+        D.panel(ctx, W / 2 - 290, top, 580, h, { airmail: true });
+        D.text(ctx, this.result.title, W / 2, top + 52, { size: 30, weight: 700, align: 'center', color: this.success ? '#2f7d4a' : D.C.label });
+        body.forEach((l, i) => D.text(ctx, l, W / 2, top + 86 + i * 22, { size: 17, weight: 600, align: 'center', color: D.C.text }));
+        D.text(ctx, this.success ? 'Click / Z to continue' : 'Click / Z to fix your design', W / 2, top + h - 22, { size: 14, weight: 700, align: 'center', color: D.C.textSoft });
+        if (this.success) {
+          // the inspector's stamp: pressed onto the corner once the card has settled
+          const pt = this.t - this.resultT - 0.35;
+          if (pt > 0) {
+            const k = D.calm() ? 1 : 1 + 0.12 * Math.max(0, 1 - pt / 0.18);
+            D.postmark(ctx, W / 2 + 226, top + 40, 30, ['HELD'], { color: D.C.violet, k, rot: 0.18, waves: false, alpha: Math.min(1, pt * 6) });
+          }
+        }
         ctx.globalAlpha = 1;
       }
     }

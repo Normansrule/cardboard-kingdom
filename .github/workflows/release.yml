@@ -1,5 +1,5 @@
 # Push a tag like v2.0.0 and this builds the download-and-play zip
-# and attaches it to a GitHub Release.
+# and attaches it to a GitHub Release, with Play buttons for this version and the newest.
 name: Build downloadable release
 on:
   push:
@@ -19,6 +19,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          V="${GITHUB_REF_NAME#v}"
+          OWNER="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          SITE="https://${OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          GAME=play.html; [ -f play.html ] || GAME=index.html
+          cat > notes.md <<NOTES
+          [![Play this version in your browser](https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_REF_NAME}/docs/media/buttons/play.svg)](${SITE}/v/${V}/${GAME})
+
+          **[▶ Play ${V} in your browser](${SITE}/v/${V}/${GAME})** · [▶ Play the newest version](${SITE}/play.html) · [Every version](${SITE}/versions.html)
+
+          Or download: unzip, then double-click play.bat (Windows), play.command (macOS) or play.sh (Linux). Or just open cardboard-kingdom-single-file.html in any browser.
+
+          What's new: see [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md).
+          NOTES
+          sed -i 's/^          //' notes.md
           gh release create "$GITHUB_REF_NAME" dist/*.zip dist/cardboard-kingdom.html \
-            --title "Cardboard Kingdom $GITHUB_REF_NAME" \
-            --notes "Download the zip, unzip it, and double-click play.bat (Windows), play.command (macOS) or play.sh (Linux). Or just open cardboard-kingdom.html in any browser."
+            --title "Cardboard Kingdom $GITHUB_REF_NAME" --notes-file notes.md

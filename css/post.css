@@ -1,0 +1,156 @@
+/* Cardboard Kingdom - "Kingdom Post" design tokens, shared by the website (index.html)
+   and the play page (play.html). The game canvas mirrors these in js/engine/draw.js (D.C / D.P). */
+
+@font-face {
+  font-family: "Bagel Fat One";
+  src: url("../fonts/BagelFatOne-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url("../fonts/Nunito-latin-var.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
+}
+
+:root {
+  /* the desk the post is sorted on (day) */
+  --desk: #2c56a3;
+  --desk-deep: #21447f;
+  --desk-text: #ffffff;
+  --desk-soft: #dfe8fb;
+  /* paper */
+  --card: #fbf3e2;
+  --card-2: #f4e8cf;
+  --stamp-paper: #f7f1e6;
+  --line: #e3d3b4;
+  /* ink */
+  --ink: #2a2140;
+  --ink-soft: #5a5070;
+  --violet: #5b3fa0;
+  --violet-deep: #3d2875;
+  --on-violet: #ffffff;
+  --label: #b8322a;
+  /* airmail and stamps */
+  --air-red: #e2483a;
+  --air-blue: #2c56a3;
+  --coral: #ef6a4a;
+  --brook: #2f8fd0;
+  --brook-light: #bfe3f5;
+  --ok: #2f7d4a;
+  --shadow: 0 0 0;
+
+  --font-display: "Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+
+  /* spacing: 4-based, with two big steps for section rhythm */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px; --s9: 112px;
+  /* type: a fluid scale between phone and desktop */
+  --t-small: 0.875rem;
+  --t-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --t-lead: clamp(1.125rem, 1.05rem + 0.4vw, 1.3rem);
+  --t-h3: clamp(1.3rem, 1.2rem + 0.5vw, 1.6rem);
+  --t-h2: clamp(2rem, 1.6rem + 2vw, 3.25rem);
+  --t-h1: clamp(2.6rem, 1.9rem + 3.4vw, 4.6rem);
+
+  --r-card: 6px;
+  --r-control: 12px;
+
+  /* motion: one interface curve; durations by size of the thing moving */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --t-press: 120ms;
+  --t-quick: 200ms;
+  --t-flip: 560ms;
+
+  color-scheme: light;
+}
+
+/* night: the same desk under a lamp */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #141d3d;
+    --desk-deep: #0d1430;
+    --desk-soft: #c9d3ee;
+    --card: #f3e7cc;
+    --card-2: #eadbbb;
+    --line: #d6c39d;
+    --shadow: 0 0 0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #141d3d;
+  --desk-deep: #0d1430;
+  --desk-soft: #c9d3ee;
+  --card: #f3e7cc;
+  --card-2: #eadbbb;
+  --line: #d6c39d;
+  --shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+/* perforated stamp edge: holes in the colour of whatever the stamp sits on (--holes) */
+.perf {
+  --holes: var(--desk);
+  --hole: 4px;
+  --pitch: 12px;
+  background-color: #fff;
+  background-image:
+    radial-gradient(circle, var(--holes) var(--hole), transparent calc(var(--hole) + 0.5px)),
+    radial-gradient(circle, var(--holes) var(--hole), transparent calc(var(--hole) + 0.5px)),
+    radial-gradient(circle, var(--holes) var(--hole), transparent calc(var(--hole) + 0.5px)),
+    radial-gradient(circle, var(--holes) var(--hole), transparent calc(var(--hole) + 0.5px));
+  background-size: var(--pitch) var(--pitch);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  background-position:
+    0 calc(var(--pitch) / -2),
+    0 calc(100% + var(--pitch) / 2),
+    calc(var(--pitch) / -2) 0,
+    calc(100% + var(--pitch) / 2) 0;
+}
+
+/* the airmail border every postcard wears */
+.airmail { position: relative; }
+.airmail::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 8px;
+  pointer-events: none;
+  background: repeating-linear-gradient(135deg, var(--air-red) 0 16px, var(--card) 16px 24px, var(--air-blue) 24px 40px, var(--card) 40px 48px);
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* the one button style: a violet ink pad */
+.btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 24px 16px;
+  border: 0;
+  border-radius: var(--r-control);
+  background: var(--violet);
+  color: var(--on-violet);
+  font: 400 1.35rem/1.1 var(--font-display);
+  text-decoration: none;
+  /* the key's edge, plus the soft shadow it casts on the desk */
+  box-shadow: 0 5px 0 var(--violet-deep), 0 10px 18px rgb(var(--shadow) / 0.25);
+  cursor: pointer;
+  transition: transform var(--t-quick) var(--ease), box-shadow var(--t-quick) var(--ease);
+}
+.btn small { font: 700 0.8rem/1.3 var(--font-body); opacity: 0.92; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--violet-deep), 0 14px 22px rgb(var(--shadow) / 0.25); }
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--violet-deep), 0 3px 6px rgb(var(--shadow) / 0.2); transition-duration: var(--t-press); }
+.btn.quiet { background: var(--card); color: var(--ink); box-shadow: 0 0 0 2px var(--ink) inset, 0 4px 0 var(--ink), 0 9px 16px rgb(var(--shadow) / 0.2); }
+.btn.quiet:hover { box-shadow: 0 0 0 2px var(--ink) inset, 0 6px 0 var(--ink), 0 13px 20px rgb(var(--shadow) / 0.2); }
+.btn.quiet:active { box-shadow: 0 0 0 2px var(--ink) inset, 0 0 0 var(--ink); }
+:focus-visible { outline: 3px solid #ffd25e; outline-offset: 3px; border-radius: 4px; }
+
+/* reduced motion: things still change state, they just stop travelling */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn:hover, .btn:active { transform: none; transition: background-color var(--t-quick) linear, box-shadow var(--t-quick) linear; }
+}

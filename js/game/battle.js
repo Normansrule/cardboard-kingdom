@@ -410,6 +410,7 @@
       }
       target.hp -= dmg;
       target.flash = 0.25;
+      target.hurt = 0.8;
       this.shake = o.big ? 14 : o.perfect ? 9 : 5;
       CK.Audio.sfx(o.perfect || o.big ? 'crit' : 'hit');
       const p = target.pos;
@@ -524,6 +525,8 @@
         if (CK.Stamps) dmg = CK.Stamps.guard(this, t, dmg);
         t.hp -= dmg;
         t.flash = 0.25;
+        t.hurt = 0.8;
+        if (t.side === 'party') { t.emote = 'sweat'; t.emoteAt = this.t; }
         this.pop(t, '' + dmg, mult < 1 ? '#9fd3ff' : '#ff8a8a');
         if (mult < 1) this.pop(t, 'BLOCKED!', '#9fd3ff', 22, -50);
         if (mv.water && !walled) this.addSoak(t, (mv.soak ? 42 : 22) * (mult < 1 ? 0.5 : 1));
@@ -557,6 +560,7 @@
     *victory() {
       const G = CK.G;
       CK.Audio.sfx('win');
+      this.won = true; // v2.20: everyone inside the costumes cheers
       let xp = 0, scraps = 0;
       for (const e of this.enemies) {
         xp += e.d.xp;
@@ -567,6 +571,7 @@
       const ups = CK.gainXp(xp);
       this.banner = { text: 'VICTORY!', t: 0 };
       this.summary = [`+${xp} XP`, `+${scraps} cardboard scraps`];
+      if (CK.Pastimes) this.summary.push(...CK.Pastimes.battleWon(this));
       if (ups) this.summary.push(`Level up! Everyone is now level ${G.level}`);
       if (ups) CK.Audio.sfx('levelup');
       for (const m of this.party) {
@@ -629,7 +634,7 @@
       this.t += dt;
       this.parts.update(dt);
       if (this.shake > 0) this.shake = Math.max(0, this.shake - dt * 40);
-      for (const c of this.party.concat(this.enemies)) if (c.flash > 0) c.flash -= dt;
+      for (const c of this.party.concat(this.enemies)) { if (c.flash > 0) c.flash -= dt; if (c.hurt > 0) c.hurt -= dt; }
       if (this.banner) this.banner.t += dt;
       if (!active || !this.ui) return;
       const ui = this.ui;
@@ -812,8 +817,9 @@
               ctx.scale(1.08, 0.78);
               ctx.translate(-x, -y);
             }
-            D.giant(ctx, c.costume, x, y, { s: sc, who: c.id, mood: c.floppy || c.hp < c.maxHp * 0.3 ? 'sad' : this.ui && this.ui.actor === c ? 'happy' : 'angry', flash: c.flash > 0, swing: c.swing, seed: c.pos.x });
+            D.giant(ctx, c.costume, x, y, { s: sc, who: c.id, mood: this.won ? 'happy' : c.hurt > 0 ? 'shock' : c.floppy || c.hp < c.maxHp * 0.3 ? 'sad' : this.ui && this.ui.actor === c ? 'happy' : 'angry', flash: c.flash > 0, swing: c.swing, seed: c.pos.x });
             if (c.floppy) ctx.restore();
+            if (c.emoteAt != null && c.alive) D.emote(ctx, x - 58 * sc, y - 228 * sc, c.emote, this.t - c.emoteAt);
             if (c.soak >= 50) for (let i = 0; i < 3; i++) {
               const dp = (this.t + i * 0.33) % 1;
               D.ellipse(ctx, x - 30 + i * 30, y - 120 + dp * 100, 4, 6, `rgba(90,180,240,${1 - dp})`);
@@ -835,7 +841,7 @@
             ctx.strokeStyle = '#5aa9e6'; ctx.lineWidth = 6; ctx.stroke();
           }
         } else {
-          D.enemy(ctx, c.d.draw, x, y, { s: c.scale, seed: c.seed, flash: c.flash > 0, stun: c.stun > 0, phase2: c.hp < c.maxHp * 0.5, calm: false });
+          D.enemy(ctx, c.d.draw, x, y, { s: c.scale, seed: c.seed, flash: c.flash > 0, stun: c.stun > 0, phase2: c.hp < c.maxHp * 0.5, calm: false, mood: c.hurt > 0 ? 'ouch' : undefined });
           if (c.stun > 0) for (let i = 0; i < 3; i++) D.star(ctx, x + Math.cos(this.t * 4 + i * 2) * 30, y - 130 + Math.sin(this.t * 4 + i * 2) * 8, 7, '#fff36a', 5, this.t);
           if (c.alive) this.drawEnemyBar(ctx, c, x, y);
         }
@@ -857,8 +863,8 @@
       if (this.ui) this.drawUi(ctx);
       if (this.banner) this.drawBanner(ctx, this.banner);
       if (this.summary && this.waitKey) {
-        D.panel(ctx, W / 2 - 200, 170, 400, 60 + this.summary.length * 30, { fill: '#fff4dc' });
-        this.summary.forEach((s, i) => D.text(ctx, s, W / 2, 210 + i * 30, { size: 20, align: 'center', weight: 700, color: i === 2 ? '#ef6b6b' : D.C.ink }));
+        D.panel(ctx, W / 2 - 200, 170, 400, 60 + this.summary.length * 30, { fill: D.C.sheet });
+        this.summary.forEach((s, i) => D.text(ctx, s, W / 2, 210 + i * 30, { size: 20, align: 'center', weight: 700, color: /^Level up/.test(s) ? '#ef6b6b' : /bottle cap/.test(s) ? '#b8443a' : D.C.ink }));
         D.text(ctx, 'Press Z / click to continue', W / 2, 238 + this.summary.length * 30, { size: 14, align: 'center', color: '#7a5434' });
       }
     }
@@ -948,7 +954,7 @@
       this.party.forEach((c, i) => {
         const x = 14, y = 40 + i * 56;
         const active = this.ui && this.ui.actor === c;
-        D.panel(ctx, x, y, 262, 52, { tape: false, inner: false, fill: active ? '#fff3b0' : c.alive ? '#fff4dc' : '#d9d0c4' });
+        D.panel(ctx, x, y, 262, 52, { tape: false, inner: false, fill: active ? D.C.sheetHi : c.alive ? D.C.sheet : '#d9d0c4' });
         D.text(ctx, (CK.coop ? (this.playerOf(c) ? 'P2 ' : 'P1 ') : '') + c.name, x + 12, y + 19, { size: CK.coop ? 13 : 15, weight: 700, color: CK.coop && this.playerOf(c) ? '#2f7a55' : D.C.ink });
         D.text(ctx, Data.costumes[c.costume].name, x + 12, y + 37, { size: 12, weight: 600, color: D.C.textSoft });
         // soak meter
@@ -971,9 +977,18 @@
       D.poly(ctx, [ax - 12, ay, ax + 12, ay, ax, ay + 16], '#ffd25a', D.C.ink, 2);
       if (ui.mode === 'menu') {
         const items = this.menuItems(m);
-        D.panel(ctx, W / 2 - 150, 62, 292, 46 + items.length * 36, { fill: '#fff4dc' });
+        D.panel(ctx, W / 2 - 150, 62, 292, 46 + items.length * 36, { fill: D.C.sheet });
         D.text(ctx, (CK.coop ? (this.playerOf(m) ? 'Player 2 · ' : 'Player 1 · ') : '') + m.name + "'s turn", W / 2 - 4, 88, { size: 16, align: 'center', weight: 700, color: CK.coop && this.playerOf(m) ? '#2f7a55' : D.C.textSoft });
         this.menuRects(items).forEach((r, i) => D.button(ctx, ...r, items[i].label, { hover: i === ui.sel, disabled: !items[i].ok, size: 17 }));
+        // v2.21: a round badge of whoever's turn it is on the menu's corner, since the menu can sit over their costume
+        const sx = W / 2 - 148, sy = 70;
+        D.shadow(ctx, sx + 2, sy + 26, 22, 5, 0.25);
+        D.circle(ctx, sx, sy, 27, '#fffaf0', D.C.ink, 3);
+        ctx.save(); ctx.beginPath(); ctx.arc(sx, sy, 22, 0, Math.PI * 2); ctx.clip();
+        D.circle(ctx, sx, sy, 22, '#ffe7b8');
+        D.peekFace(ctx, m.id, sx, sy + 5, 19, 'happy');
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(sx, sy, 22, 0, Math.PI * 2); ctx.strokeStyle = D.C.ink; ctx.lineWidth = 2; ctx.stroke();
         const it = items[ui.sel];
         const DESC = {
           attack: 'Swing your costume at one foe. Pressing on the ring makes it a PERFECT hit, but every hit lands either way.',
@@ -991,7 +1006,7 @@
         }
       } else if (ui.mode === 'build') {
         const keys = Object.keys(Data.builds);
-        D.panel(ctx, W / 2 - 146, 62, 292, 208, { fill: '#fff4dc' });
+        D.panel(ctx, W / 2 - 146, 62, 292, 208, { fill: D.C.sheet });
         D.text(ctx, `Build what? (${CK.G.scraps} scraps)`, W / 2, 96, { size: 16, align: 'center', weight: 700, color: D.C.textSoft });
         this.buildRects().forEach((r, i) => {
           const b = Data.builds[keys[i]];

@@ -5,6 +5,9 @@
   const D = CK.D, U = CK.U, Input = CK.Input;
   const W = CK.W, H = CK.H;
   const TS = (CK.TS = 48);
+  // characters on the map are drawn a little larger so their faces read at map distance (v2.19)
+  const MAP_S = 1.18;
+  const EMOTES = ['heart', 'note', 'sparkle', 'smile'];
 
   class Overworld {
     constructor(chId, pos) {
@@ -80,6 +83,8 @@
         const [x, y] = k.split(',').map(Number);
         this.map.set(x, y, this.map.get(x, y) === 'S' ? ',' : '.');
       }
+      // v2.22: the world dressing (groves, gardens, yards, signposts, landmarks), see worldgen.js
+      this.world = CK.World ? CK.World.get(ch) : null;
       this.flooded = ch.noFlood ? false : ch.id === 'campus' ? CK.flag('st_storm') && !CK.flag('st_garden') : !CK.flag(ch.id === 'spring' ? 'spring_dam' : ch.id === 'summer' ? 'summer_gates' : ch.id === 'fall' ? 'fall_bridge' : 'winter_done');
       this.buildEntities();
       this.prerender();
@@ -161,6 +166,7 @@
       const tx = Math.floor(px / TS), ty = Math.floor(py / TS);
       const tile = this.map.get(tx, ty);
       if (CK.SOLID.has(tile)) return true;
+      if (this.world && tx >= 0 && ty >= 0 && tx < this.world.w && this.world.solid[ty * this.world.w + tx]) return true;
       // shallows: only someone wearing the Suspension Bridge can span them
       if (tile === 'h' && (who == null || this.costumeOf(who) !== 'bridge')) return true;
       for (const e of this.ents) {
@@ -411,7 +417,7 @@
         if (d < bd) {
           bd = d;
           best = e;
-          e.ix = ix;
+          e.ix = ix + (e.type === 'npc' && e.paceOff || 0);
           e.iy = iy;
         }
       }
@@ -664,6 +670,7 @@
         }
       // chapters can paint extra ground details (like a stone bridge deck)
       if (this.ch.paintGround) this.ch.paintGround.call(this, g, m);
+      if (this.world) CK.World.paintFlat(this, g);
       this.ground = c;
     }
     drawDecor(g, x, y, h) {
@@ -989,8 +996,46 @@
         case 'deco': this.drawDeco(ctx, e); break;
         case 'npc': {
           if (e.look === 'leafpile') { this.drawDeco(ctx, { kind: 'leafpile', px: e.px, py: e.py }); D.eyes(ctx, x, y - 16, 5, 2.2, { happy: true }); break; }
-          const facing = Math.abs(this.player.x - e.px) < 120 && Math.abs(this.player.y - e.py) < 120 ? (this.player.x < e.px ? 'left' : 'right') : 'down';
-          D.char(ctx, e.look, x, y, Object.assign({ dir: facing, seed: e.x }, e.o || {}));
+          const dx = this.player.x - e.px, dy = this.player.y - e.py;
+          const near = Math.abs(dx) < 120 && Math.abs(dy) < 120;
+          // v2.21: villagers potter about when you're not with them, Animal Crossing style: a few steps
+          // one way, a rest, a few steps back. It's only drawn (their spot on the map doesn't move), so it
+          // never gets in the way of a quest, and they only do it where both sides are clear.
+          if (e.paceR == null) {
+            const clear = (px) => !this.solidAt(px, e.py, e) && !this.solidAt(px, e.py - 8, e) && !this.solidAt(px, e.py + 8, e);
+            e.hums = [...String(e.id)].reduce((a, c) => a + c.charCodeAt(0), 0) % 2 === 0;
+            e.paceR = clear(e.px + 34) && clear(e.px + 54) ? 24 : clear(e.px - 34) && clear(e.px - 54) ? -24 : 0;
+          }
+          const ph = (CK.time * 0.085 + Math.abs(e.x * 0.37 + e.y * 0.61)) % 1;
+          let pace = 0, pacing = 0;
+          // the one your goal arrow points at waits for you where the ring is
+          const waiting = this._goal && this._goal.e === e;
+          if (e.paceR && !D.calm() && !waiting) {
+            if (ph < 0.3) pace = 0;
+            else if (ph < 0.42) { pace = (ph - 0.3) / 0.12; pacing = 1; }
+            else if (ph < 0.72) pace = 1;
+            else if (ph < 0.84) { pace = 1 - (ph - 0.72) / 0.12; pacing = -1; }
+            pace = pace * pace * (3 - 2 * pace);
+          }
+          if (!near) e.paceOff = pace * e.paceR;
+          const off = e.paceOff || 0;
+          const facing = near ? (dx - off < 0 ? 'left' : 'right') : pacing ? (pacing * e.paceR > 0 ? 'right' : 'left') : 'down';
+          // folk notice you: their eyes follow you, and they wave hello as you walk up (v2.18)
+          if (near && !e.greetAt) e.greetAt = CK.time;
+          if (!near && Math.hypot(dx, dy) > 200) e.greetAt = 0;
+          const look = near ? { gaze: [Math.max(-1, Math.min(1, dx / 70)), Math.max(-1, Math.min(1, dy / 90))] } : {};
+          if (near && CK.time - e.greetAt < 1.6) look.pose = 'wave';
+          // whoever is speaking in a dialogue moves their mouth on the map too (v2.19)
+          const sp = CK.talkingWho && CK.Data.speakers[CK.talkingWho];
+          if (sp && sp.look === e.look && (!sp.o || !sp.o.species || (e.o && e.o.species === sp.o.species))) look.talk = true;
+          const eo = e.o || {};
+          if (!near && pacing) look.walk = CK.time * 9;
+          D.char(ctx, e.look, x + off, y, Object.assign({ dir: facing, seed: e.x }, look, eo, { s: MAP_S * (eo.s || 1) }));
+          // some of them hum to themselves while they rest
+          if (!near && !CK.talkingWho && e.hums && !waiting && ph > 0.48 && ph < 0.7) D.emote(ctx, x + off + 22 * MAP_S, y - 62 * MAP_S * (eo.s || 1), 'note', (ph - 0.48) * 10);
+          // and a little thought bubble pops up when they first notice you, Animal Crossing style
+          // (not while their Talk prompt is showing, which sits in the same spot)
+          if (near && !CK.talkingWho && e !== this.focus && e !== this.focus2) D.emote(ctx, x + off + 22 * MAP_S, y - 62 * MAP_S * (eo.s || 1), e.greetEmote || EMOTES[Math.floor(Math.abs(e.x * 7 + e.y * 3)) % EMOTES.length], CK.time - e.greetAt);
           break;
         }
         case 'enemy': {
@@ -1148,6 +1193,7 @@
       ctx.save();
       ctx.drawImage(this.ground, ox, oy, W, H, 0, 0, W, H);
       this.drawWater(ctx, ox, oy);
+      if (this.world) CK.World.drawLily(this, ctx, ox, oy);
       if (this.flooded) for (const [fx, fy] of this.ch.flood || []) {
         const X = fx * TS - ox, Y = fy * TS - oy;
         if (X < -60 || X > W || Y < -60 || Y > H) continue;
@@ -1159,6 +1205,8 @@
       // y-sorted entities
       const list = [];
       for (const t of this.trees) list.push({ y: t.py, f: () => this.drawTree(ctx, t) });
+      if (this.world) for (const pr of this.world.props) if (Math.abs(pr.px - ox - W / 2) < W / 2 + 80 && Math.abs(pr.py - oy - H / 2) < H / 2 + 110) list.push({ y: pr.py, f: () => CK.World.drawProp(this, ctx, pr) });
+      if (this.extraDraw) this.extraDraw(list, ctx, ox, oy);
       for (const e of this.ents) {
         if (e.type === 'trigger') continue;
         let sy = e.py;
@@ -1173,15 +1221,17 @@
       const costume = (id) => (G.party.find((m) => m.id === id) || {}).costume;
       const f1 = this.trail[16], f2 = this.trail[32];
       if (!this.ch.noFollowers) {
-        list.push({ y: f2.y, f: () => D.char(ctx, 'pip', f2.x - ox, f2.y - oy, { dir: f2.dir, costume: costume('pip') }) });
-        list.push({ y: f1.y, f: () => D.char(ctx, 'corry', f1.x - ox, f1.y - oy, { dir: f1.dir, walk: p.moving ? p.walk : 0, costume: costume('corry') }) });
+        const tk = (id) => CK.talkingWho === id;
+        list.push({ y: f2.y, f: () => D.char(ctx, 'pip', f2.x - ox, f2.y - oy, { s: MAP_S, dir: f2.dir, costume: costume('pip'), talk: tk('pip') }) });
+        list.push({ y: f1.y, f: () => D.char(ctx, 'corry', f1.x - ox, f1.y - oy, { s: MAP_S, dir: f1.dir, walk: p.moving ? p.walk : 0, costume: costume('corry'), talk: tk('corry') }) });
       }
       const real = this.ch.id === 'campus';
       if (this.p2) {
         const q = this.p2;
-        list.push({ y: q.y, f: () => D.char(ctx, 'jules', q.x - ox, q.y - oy, { dir: q.dir, walk: q.moving ? q.walk : 0, costume: real ? null : costume('jules'), night: this.night }) });
+        list.push({ y: q.y, f: () => D.char(ctx, 'jules', q.x - ox, q.y - oy, { s: MAP_S, talk: CK.talkingWho === 'jules', dir: q.dir, walk: q.moving ? q.walk : 0, costume: real ? null : costume('jules'), night: this.night }) });
       }
-      list.push({ y: p.y, f: () => D.char(ctx, 'sam', p.x - ox, p.y - oy, { dir: p.dir, walk: p.moving ? p.walk : 0, costume: real ? null : costume('sam'), night: this.night }) });
+      const cheer = !p.moving && CK.time - (CK.cheerAt || -9) < 1.3;
+      list.push({ y: p.y, f: () => D.char(ctx, 'sam', p.x - ox, p.y - oy, { s: MAP_S, talk: CK.talkingWho === 'sam', pose: cheer ? 'cheer' : undefined, mood: cheer ? 'happy' : undefined, dir: cheer ? 'down' : p.dir, walk: p.moving ? p.walk : 0, costume: real ? null : costume('sam'), night: this.night }) });
       list.sort((a, b) => a.y - b.y);
       for (const it of list) it.f();
       if (muted) {
@@ -1227,7 +1277,7 @@
       const label = f.promptLabel || (CK.promptLabel && CK.promptLabel(f)) || {
         npc: 'Talk', notice: 'Read', chest: 'Open', bench: 'Workbench', site: 'Blueprint', stand: 'Warm up', campfire: 'Rest', cat: 'Pet', shop: 'Shop', portal: 'Look', knightfig: 'Look', building: f.door || 'Enter', deco: f.label || 'Jump in!',
       }[f.type] || (f.type === 'house' ? (CK.houseLabel && CK.houseLabel(f)) || (CK.flag('knock_' + f.id) ? 'Peek' : 'Knock') : f.type === 'tile' ? (f.tile === 'Q' ? (wear === 'bulldozer' ? 'Shove!' : 'Barricade') : wear === 'snowplow' ? 'Plow!' : 'Snowdrift') : 'Read');
-      const fx = f.ix - ox, fy = (f.type === 'house' ? f.y * TS - 30 : f.type === 'building' ? f.iy - 90 : f.iy - 70) - oy + b;
+      const fx = f.ix - ox, fy = (f.type === 'house' ? f.y * TS - 30 : f.type === 'building' ? f.iy - 90 : f.iy - 80) - oy + b;
       ctx.font = `700 15px ${CK.FONT}`;
       const w = D.measure(ctx, label, 15, 700) + 44;
       D.rr(ctx, fx - w / 2, fy - 18, w, 26, 13); ctx.fillStyle = who ? '#e6f7ef' : '#fffaf0'; ctx.fill(); ctx.strokeStyle = D.C.ink; ctx.lineWidth = 2; ctx.stroke();
@@ -1316,6 +1366,8 @@
         if (e.type === 'deco' && e.kind === 'pumpkin') lights.push([e.px - ox, e.py - oy - 14, 70, 0.9]);
         if (e.type === 'building') lights.push([e.px - ox, e.py - oy - 30, 120, 0.7]);
       }
+      if (this.world) for (const pr of this.world.props) if (pr.light) lights.push([pr.px - ox, pr.py - oy - 26, pr.light, 0.9]);
+      if (this.extraLights) this.extraLights(lights, ox, oy);
       for (const pt of this.parts.list) if (pt.shape === 'firefly') lights.push([pt.x - ox, pt.y - oy, 30, 0.5]);
       for (const [x, y, r, a] of lights) {
         if (x < -r || x > W + r || y < -r || y > H + r) continue;
@@ -1341,27 +1393,30 @@
       ctx.restore();
     }
     drawHud(ctx) {
-      const G = CK.G;
-      D.panel(ctx, 12, 10, 268, 58, { seed: 1, tape: false });
-      D.icon(ctx, this.night ? 'moon' : 'sun', 40, 39, 1);
-      D.text(ctx, this.ch.name, 64, 34, { size: 18, weight: 700, color: D.C.ink });
-      D.text(ctx, this.season.name + (this.night ? ' · Night' : ' · Day') + '  ·  Lv ' + G.level, 64, 55, { size: D.T.small, weight: 600, color: D.C.textSoft });
-      D.panel(ctx, 12, 74, 150, 34, { seed: 2, tape: false, inner: false });
-      D.icon(ctx, 'scrap', 32, 91, 0.9);
-      D.text(ctx, '' + G.scraps, 46, 98, { size: 17, weight: 700 });
-      D.icon(ctx, 'snack', 102, 92, 0.85);
-      D.text(ctx, '' + G.snacks, 116, 98, { size: 17, weight: 700 });
+      const G = CK.G, P = D.pal();
+      // where you are: a postcard with the time of day as its stamp
+      const nw = Math.max(200, D.measure(ctx, this.ch.name, 18, 800) + 90);
+      D.panel(ctx, 12, 10, nw, 60, { theme: true });
+      D.stamp(ctx, 22, 18, 40, 44, { holes: P.sheet, margin: 4, hole: 2.4, pitch: 7, fill: this.night ? '#2b2560' : '#dff0ff', shadow: 'rgba(0,0,0,0)', art: (c, ix, iy, iw, ih) => D.icon(c, this.night ? 'moon' : 'sun', ix + iw / 2, iy + ih / 2, 0.9) });
+      D.text(ctx, this.ch.name, 76, 36, { size: 18, weight: 800, color: P.text });
+      D.text(ctx, this.season.name + (this.night ? ' · Night' : ' · Day') + '  ·  Lv ' + G.level, 76, 57, { size: D.T.small, weight: 700, color: P.soft });
+      D.panel(ctx, 12, 78, 150 + (G.caps != null ? 62 : 0), 34, { theme: true, r: 17 });
+      D.icon(ctx, 'scrap', 34, 95, 0.9);
+      D.text(ctx, '' + G.scraps, 50, 102, { size: 17, weight: 800, color: P.text });
+      D.icon(ctx, 'snack', 104, 96, 0.85);
+      D.text(ctx, '' + G.snacks, 120, 102, { size: 17, weight: 800, color: P.text });
+      if (G.caps != null) { D.cap(ctx, 166, 95, 0.85); D.text(ctx, '' + G.caps, 180, 102, { size: 17, weight: 800, color: P.text }); }
       const obj = this.ch.objective(G);
       if (obj) {
-        const lines = D.wrap(ctx, obj, 300, 16, 600);
-        const h = 36 + lines.length * 20;
-        D.panel(ctx, W - 344, 10, 332, h, { seed: 4, tape: false, fill: D.C.sheet });
-        D.text(ctx, 'Goal', W - 326, 32, { size: D.T.small, weight: 700, color: D.C.label });
-        lines.forEach((l, i) => D.text(ctx, l, W - 326, 52 + i * 20, { size: 16, weight: 600, color: D.C.text }));
+        const lines = D.wrap(ctx, obj, 300, 16, 700);
+        const h = 38 + lines.length * 20;
+        D.panel(ctx, W - 344, 10, 332, h, { theme: true });
+        D.text(ctx, 'Goal', W - 326, 32, { size: D.T.small, weight: 800, color: P.label });
+        lines.forEach((l, i) => D.text(ctx, l, W - 326, 53 + i * 20, { size: 16, weight: 700, color: P.text }));
       }
       // field power + wetness
       const fp = CK.Data.fieldPowers[this.costumeOf(0)];
-      let hy = 114;
+      let hy = 120;
       if (fp && this.ch.id !== 'campus') {
         const fw = Math.max(150, D.measure(ctx, 'Field power: ' + fp, D.T.small, 600) + 24);
         D.panel(ctx, 12, hy, fw, 30, { seed: 5, tape: false, inner: false, fill: '#eaf4ff' });
@@ -1374,8 +1429,9 @@
       }
       if (CK.lastSave && CK.time - CK.lastSave < 2.5) {
         ctx.globalAlpha = Math.min(1, (2.5 - (CK.time - CK.lastSave)) * 2);
-        D.cardboard(ctx, W - 64, H - 100, 40, 30, { r: 4, lw: 2.5 });
-        D.text(ctx, 'saved', W - 44, H - 78, { size: 12, weight: 700, align: 'center', color: D.C.text });
+        // saving stamps a little postmark in the corner
+        D.circle(ctx, W - 50, H - 86, 25, P.sheet);
+        D.postmark(ctx, W - 50, H - 86, 22, ['SAVED'], { color: P.accent, waves: false, rot: -0.2, alpha: 1 });
         ctx.globalAlpha = 1;
       }
       // controls reminder: on a paper strip so it reads over any scenery, then it steps aside
@@ -1385,8 +1441,8 @@
         const hint = CK.coop ? 'P1: WASD + Space  ·  P2: Arrows + Enter  ·  Esc menu  ·  M sound' : 'Arrows/WASD move  ·  Z/Space talk  ·  Esc menu  ·  M sound';
         const hw = D.measure(ctx, hint, D.T.small, 600) + 28;
         ctx.globalAlpha = ha;
-        D.rr(ctx, W - 12 - hw, H - 36, hw, 26, 13); ctx.fillStyle = 'rgba(255,250,240,0.85)'; ctx.fill();
-        D.text(ctx, hint, W - 12 - hw / 2, H - 18, { size: D.T.small, align: 'center', color: D.C.text });
+        D.rr(ctx, W - 12 - hw, H - 36, hw, 26, 13); ctx.fillStyle = P.sheet; ctx.globalAlpha *= 0.92; ctx.fill();
+        D.text(ctx, hint, W - 12 - hw / 2, H - 18, { size: D.T.small, weight: 700, align: 'center', color: P.text });
         ctx.globalAlpha = 1;
       }
     }

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play · Cardboard Kingdom</title>
+<meta name="description" content="A cozy Costume Quest-style adventure about a burnt-out civil engineering student and a kingdom made of cardboard. Plays in your browser, alone or with a friend.">
+<meta name="theme-color" content="#2c56a3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141d3d" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='7' width='26' height='18' rx='2' fill='%23fbf3e2' stroke='%232a2140' stroke-width='2.5'/%3E%3Cpath d='M3 8l13 9 13-9' fill='none' stroke='%232a2140' stroke-width='2.5' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='11' r='4' fill='none' stroke='%235b3fa0' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/post.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    background: var(--desk);
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.07) 1px, transparent 1.5px);
+    background-size: 14px 14px;
+    color: var(--desk-text);
+    font-family: var(--font-body);
+  }
+  canvas {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    border-radius: 8px; outline: none; touch-action: none;
+    box-shadow: 0 14px 34px rgb(var(--shadow) / 0.45), 0 2px 6px rgb(var(--shadow) / 0.3);
+  }
+  canvas:focus-visible { outline: 3px solid #ffd25e; outline-offset: 4px; }
+  .note {
+    position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s5);
+  }
+  .note > div {
+    width: min(440px, 100%); background: var(--card); color: var(--ink); border-radius: var(--r-card);
+    padding: var(--s6) var(--s6) var(--s5); text-align: left; box-shadow: 0 18px 40px rgb(var(--shadow) / 0.4);
+  }
+  .note h1 { font: 400 1.9rem/1.05 var(--font-display); margin: 0 0 var(--s3); }
+  .note p { font-size: 1.05rem; line-height: 1.5; margin: 0 0 var(--s4); color: var(--ink-soft); }
+  .note .btn { margin-top: var(--s2); }
+  /* loading: an envelope whose flap folds shut, then opens again */
+  .env { position: relative; width: 64px; height: 44px; margin-bottom: var(--s4); background: var(--card-2); border: 3px solid var(--ink); border-radius: 4px; }
+  .env::before {
+    content: ""; position: absolute; left: -3px; right: -3px; top: -3px; height: 30px;
+    background: var(--card); border: 3px solid var(--ink); border-radius: 4px 4px 0 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: 50% 0;
+    animation: flap 1.4s var(--ease) infinite alternate;
+  }
+  .env::after { content: ""; position: absolute; right: -10px; top: -12px; width: 22px; height: 22px; border: 3px solid var(--violet); border-radius: 50%; }
+  @keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(-1); } }
+  .note a:not(.btn) { color: var(--violet); font-weight: 800; }
+  @media (prefers-reduced-motion: reduce) { .env::before { animation: none; } }
+  #oops { display: none; }
+  /* the canvas stays out of sight until the game has actually started */
+  #boot ~ canvas, body.broken canvas { visibility: hidden; }
+</style>
+<noscript><style>#boot { display: none; }</style></noscript>
+</head>
+<body>
+<main>
+<div id="boot" class="note" role="status"><div><div class="env" aria-hidden="true"></div><h1>Sorting the post...</h1><p>The Kingdom is loading. It's about 1.2 MB, so this only takes a moment.</p></div></div>
+<div id="oops" class="note" role="alert"><div><h1>The post got soggy.</h1><p id="oops-msg">Something stopped the game from starting. Reloading usually fixes it. If it keeps happening, try another browser, or download the game and play it offline.</p><a class="btn" href="">Try again<small>reload this page</small></a></div></div>
+<noscript><div class="note"><div><h1>Needs JavaScript.</h1><p>Cardboard Kingdom runs on JavaScript. Turn it on for this page and reload, or <a href="https://github.com/Normansrule/cardboard-kingdom/releases/latest">download the game</a>.</p></div></div></noscript>
+<canvas id="game" tabindex="0" aria-label="Cardboard Kingdom. Arrow keys or WASD to move, Z, Space or Enter to talk and confirm, Escape for the menu, M for sound."></canvas>
+</main>
+<script>
+  // if a script fails to load or throws before the title screen, swap the loader for a friendly error card
+  window.addEventListener('error', function (e) {
+    var t = e.target;
+    if ((window.CK && window.CK.booted) || (t && t.tagName && t.tagName !== 'SCRIPT')) return;
+    var b = document.getElementById('boot'); if (b) b.remove();
+    document.body.classList.add('broken');
+    document.getElementById('oops').style.display = 'grid';
+  }, true);
+</script>
+<script src="js/engine/core.js"></script>
+<script src="js/engine/audio.js"></script>
+<script src="js/engine/draw.js"></script>
+<script src="js/engine/chars.js"></script>
+<script src="js/game/data.js"></script>
+<script src="js/game/state.js"></script>
+<script src="js/game/script.js"></script>
+<script src="js/game/maps.js"></script>
+<script src="js/game/overworld.js"></script>
+<script src="js/game/battle.js"></script>
+<script src="js/game/puzzles.js"></script>
+<script src="js/game/story.js"></script>
+<script src="js/game/campus.js"></script>
+<script src="js/game/storm.js"></script>
+<script src="js/game/riverbend.js"></script>
+<script src="js/game/lanternmere.js"></script>
+<script src="js/game/gullpoint.js"></script>
+<script src="js/game/friends.js"></script>
+<script src="js/game/assist.js"></script>
+<script src="js/game/longbridge.js"></script>
+<script src="js/game/post.js"></script>
+<script src="js/game/neighbors.js"></script>
+<script src="js/game/patchwork.js"></script>
+<script src="js/game/ferryyard.js"></script>
+<script src="js/game/cozy.js"></script>
+<script src="js/game/costumes.js"></script>
+<script src="js/game/marsh.js"></script>
+<script src="js/game/home.js"></script>
+<script src="js/game/thimble.js"></script>
+<script src="js/game/rivet.js"></script>
+<script src="js/game/worldgen.js"></script>
+<script src="js/game/closet.js"></script>
+<script src="js/game/pastimes.js"></script>
+<script src="js/game/book.js"></script>
+<script src="js/game/garden.js"></script>
+<script src="js/game/friendships.js"></script>
+<script src="js/game/together.js"></script>
+<script src="js/game/menus.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

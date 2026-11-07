@@ -35,14 +35,26 @@
   // ------------------------------------------------------------ faces
   // Costume Quest face: small dark oval eyes set low, big pink cheeks, a tiny mouth.
   // (x, y) is the middle of the face; s = 1 suits a head of radius 18.
+  // v2.17: bigger, glossier eyes (Animal Crossing sparkle) and soft gradient cheeks.
+  // v2.18: kids get Costume Quest eye-whites with pupils that look around; o.gaze = [-1..1, -1..1]
+  // steers them (idleGaze() when it isn't given). o.talk flaps the mouth while a line is typing.
   function cqFace(ctx, x, y, s, o = {}) {
     const mood = o.mood;
-    const sp = 6.4 * s;
-    const ey = y + 1 * s;
+    const cq = !!o.cq;
+    const sp = (cq ? 7.4 : 7) * s;
+    const gz = o.gaze || idleGaze(o.seed || 0);
+    const ey = y + 1.4 * s;
     const blink = Math.sin(CK.time * 1.3 + (o.seed || 0) * 1.7) > 0.986;
-    // cheeks first so the eyes sit on top
-    D.ellipse(ctx, x - 10 * s, y + 6 * s, 3.8 * s, 2.5 * s, 'rgba(255,105,120,0.42)');
-    D.ellipse(ctx, x + 10 * s, y + 6 * s, 3.8 * s, 2.5 * s, 'rgba(255,105,120,0.42)');
+    // cheeks first so the eyes sit on top: a soft blush that fades out, not a flat disc
+    for (const k of [-1, 1]) {
+      const cx = x + k * 10.6 * s, cy = y + 6.6 * s;
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 4.6 * s);
+      g.addColorStop(0, 'rgba(255,104,128,0.62)');
+      g.addColorStop(0.6, 'rgba(255,104,128,0.34)');
+      g.addColorStop(1, 'rgba(255,104,128,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(cx, cy, 4.6 * s, 3.1 * s, 0, 0, TAU); ctx.fill();
+    }
     ctx.lineCap = 'round';
     if (mood === 'happy') {
       ctx.strokeStyle = C.ink;
@@ -55,26 +67,35 @@
     } else if (blink) {
       D.line(ctx, x - sp - 2.4 * s, ey, x - sp + 2.4 * s, ey, C.ink, 2 * Math.max(0.6, s));
       D.line(ctx, x + sp - 2.4 * s, ey, x + sp + 2.4 * s, ey, C.ink, 2 * Math.max(0.6, s));
+    } else if (cq) {
+      const big = mood === 'shock' ? 1.15 : 1;
+      for (const k of [-1, 1]) cqEye(ctx, x + k * sp, ey - 0.6 * s, 3.9 * s * big, 4.9 * s * big, gz, mood, k, s, o.eye);
     } else {
-      const ry = (mood === 'shock' ? 3.9 : 3.3) * s;
-      D.ellipse(ctx, x - sp, ey, 2.4 * s, ry, '#2b1a10');
-      D.ellipse(ctx, x + sp, ey, 2.4 * s, ry, '#2b1a10');
-      D.circle(ctx, x - sp + 0.8 * s, ey - 1.3 * s, 0.95 * s, '#fff');
-      D.circle(ctx, x + sp + 0.8 * s, ey - 1.3 * s, 0.95 * s, '#fff');
+      // sparkle eyes drift a little toward where the character is looking
+      const ox = gz[0] * 0.9 * s, oy = gz[1] * 0.6 * s;
+      sparkleEye(ctx, x - sp + ox, ey + oy, 3.1 * s, (mood === 'shock' ? 4.7 : 4.1) * s, o.eye);
+      sparkleEye(ctx, x + sp + ox, ey + oy, 3.1 * s, (mood === 'shock' ? 4.7 : 4.1) * s, o.eye);
     }
     const bw = 1.8 * Math.max(0.6, s);
     if (mood === 'sad') {
-      D.line(ctx, x - sp - 3 * s, ey - 5 * s, x - sp + 2.5 * s, ey - 6.5 * s, C.ink, bw);
-      D.line(ctx, x + sp + 3 * s, ey - 5 * s, x + sp - 2.5 * s, ey - 6.5 * s, C.ink, bw);
+      D.line(ctx, x - sp - 3 * s, ey - 6.2 * s, x - sp + 2.5 * s, ey - 7.7 * s, C.ink, bw);
+      D.line(ctx, x + sp + 3 * s, ey - 6.2 * s, x + sp - 2.5 * s, ey - 7.7 * s, C.ink, bw);
     } else if (mood === 'angry') {
-      D.line(ctx, x - sp - 3 * s, ey - 6.5 * s, x - sp + 2.5 * s, ey - 4.5 * s, C.ink, bw);
-      D.line(ctx, x + sp + 3 * s, ey - 6.5 * s, x + sp - 2.5 * s, ey - 4.5 * s, C.ink, bw);
+      D.line(ctx, x - sp - 3 * s, ey - 7.7 * s, x - sp + 2.5 * s, ey - 5.6 * s, C.ink, bw);
+      D.line(ctx, x + sp + 3 * s, ey - 7.7 * s, x + sp - 2.5 * s, ey - 5.6 * s, C.ink, bw);
     } else if (mood === 'shock') {
-      D.line(ctx, x - sp - 2.5 * s, ey - 7 * s, x - sp + 2.5 * s, ey - 7.5 * s, C.ink, bw);
-      D.line(ctx, x + sp + 2.5 * s, ey - 7 * s, x + sp - 2.5 * s, ey - 7.5 * s, C.ink, bw);
+      D.line(ctx, x - sp - 2.5 * s, ey - 8.4 * s, x - sp + 2.5 * s, ey - 8.9 * s, C.ink, bw);
+      D.line(ctx, x + sp + 2.5 * s, ey - 8.4 * s, x + sp - 2.5 * s, ey - 8.9 * s, C.ink, bw);
     }
-    const my = y + 7.5 * s;
-    if (mood === 'shock') D.ellipse(ctx, x, my + 1 * s, 2 * s, 2.6 * s, '#7a2a2a', C.ink, 1.4);
+    const my = y + 8 * s;
+    const talk = o.talk && !D.calm() ? Math.max(0, Math.sin(CK.time * 17 + (o.seed || 0))) : 0;
+    if (talk > 0.15 && mood !== 'shock') {
+      // mid-word: an open mouth whose size follows the syllable
+      const open = (1 + talk * 2.6) * s;
+      ctx.beginPath(); ctx.ellipse(x, my, 3 * s, open, 0, 0, TAU);
+      ctx.fillStyle = '#7a2a2a'; ctx.fill(); stroke(ctx, 1.4 * Math.max(0.6, s));
+      if (open > 2.4 * s) D.ellipse(ctx, x, my + open * 0.45, 1.8 * s, open * 0.35, '#ff8fa0');
+    } else if (mood === 'shock') D.ellipse(ctx, x, my + 1 * s, 2 * s, 2.6 * s, '#7a2a2a', C.ink, 1.4);
     else if (mood === 'sad') {
       ctx.beginPath(); ctx.arc(x, my + 3 * s, 3 * s, Math.PI * 1.2, Math.PI * 1.8); stroke(ctx, 1.8 * Math.max(0.6, s));
     } else if (mood === 'angry') {
@@ -86,14 +107,80 @@
       ctx.beginPath(); ctx.moveTo(x - 4 * s, my - 0.5 * s); ctx.quadraticCurveTo(x, my + 5.5 * s, x + 4 * s, my - 0.5 * s); ctx.closePath();
       ctx.fillStyle = '#7a2a2a'; ctx.fill(); stroke(ctx, 1.4 * Math.max(0.6, s));
       D.ellipse(ctx, x, my + 2.4 * s, 1.8 * s, 1 * s, '#ff8fa0');
+    } else if (!o.w) {
+      ctx.beginPath(); ctx.arc(x, my - 1.6 * s, 2.6 * s, Math.PI * 0.18, Math.PI * 0.82); stroke(ctx, 1.8 * Math.max(0.6, s));
     } else {
-      ctx.beginPath(); ctx.arc(x, my - 1 * s, 2.8 * s, Math.PI * 0.2, Math.PI * 0.8); stroke(ctx, 1.8 * Math.max(0.6, s));
+      // animals get a small cat-like "w" smile, which reads cuter than a plain arc at this size
+      ctx.beginPath();
+      ctx.arc(x - 1.5 * s, my - 1.2 * s, 1.6 * s, Math.PI * 0.15, Math.PI * 0.95);
+      ctx.moveTo(x + 1.5 * s + 1.6 * s * Math.cos(Math.PI * 0.05), my - 1.2 * s + 1.6 * s * Math.sin(Math.PI * 0.05));
+      ctx.arc(x + 1.5 * s, my - 1.2 * s, 1.6 * s, Math.PI * 0.05, Math.PI * 0.85);
+      stroke(ctx, 1.6 * Math.max(0.6, s));
     }
   }
   D.cqFace = cqFace;
 
+  // Where an idle character is looking: mostly ahead, now and then a glance aside, held for a beat.
+  function idleGaze(seed) {
+    if (D.calm && D.calm()) return [0, 0];
+    const slot = Math.floor(CK.time / 2.3 + seed * 0.37);
+    const h = Math.sin(slot * 12.9898 + seed * 78.233) * 43758.5453;
+    const r = h - Math.floor(h);
+    if (r < 0.45) return [0, 0];
+    if (r < 0.65) return [-0.85, 0.1];
+    if (r < 0.85) return [0.85, 0.1];
+    return [0.3, -0.6];
+  }
+  D.idleGaze = idleGaze;
+
+  // A Costume Quest eye: a white with an ink rim and a big pupil that moves inside it.
+  function cqEye(ctx, x, y, rx, ry, gz, mood, k, s, iris) {
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU);
+    ctx.fillStyle = '#fffdf8'; ctx.fill();
+    ctx.save(); ctx.clip();
+    const pr = rx * 0.68;
+    const px = x + gz[0] * (rx - pr) * 0.95, py = y + ry * 0.18 + gz[1] * (ry - pr) * 0.8;
+    const g = ctx.createLinearGradient(px, py - pr, px, py + pr);
+    g.addColorStop(0, '#1b1224'); g.addColorStop(0.6, '#2b1a22'); g.addColorStop(1, iris || '#6a4232');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(px, py, pr, pr * 1.12, 0, 0, TAU); ctx.fill();
+    D.circle(ctx, px + pr * 0.35, py - pr * 0.4, pr * 0.36, '#fff');
+    D.circle(ctx, px - pr * 0.35, py + pr * 0.45, pr * 0.15, 'rgba(255,255,255,.8)');
+    // upper lid shadow keeps the eye soft, and droops when sad or cross
+    const lid = mood === 'sad' ? 0.42 : mood === 'angry' ? 0.36 : 0.12;
+    ctx.fillStyle = 'rgba(42,33,64,.16)';
+    ctx.fillRect(x - rx, y - ry, rx * 2, ry * lid * 2);
+    ctx.restore();
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU);
+    stroke(ctx, Math.max(1.1, 1.3 * s));
+  }
+  D.cqEye = cqEye;
+
+  // An eye with a warm iris at the bottom, a big catch-light top right and a small one bottom left.
+  function sparkleEye(ctx, x, y, rx, ry, iris) {
+    const g = ctx.createLinearGradient(x, y - ry, x, y + ry);
+    g.addColorStop(0, '#1b1224');
+    g.addColorStop(0.55, '#2b1a22');
+    g.addColorStop(1, iris || '#7a4a34');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill();
+    D.circle(ctx, x + rx * 0.32, y - ry * 0.38, rx * 0.44, '#fff');
+    D.circle(ctx, x - rx * 0.36, y + ry * 0.42, rx * 0.2, 'rgba(255,255,255,.85)');
+  }
+  D.sparkleEye = sparkleEye;
+
   // Monster eyes: glowing and a bit spooky when angry, ordinary and friendly otherwise.
   function monsterEyes(ctx, x, y, sp, r, o = {}) {
+    if (o.mood === 'ouch') {
+      // v2.20: squeezed shut when a hit lands, like > <
+      for (const side of [-1, 1]) {
+        const ex = x + side * sp;
+        ctx.beginPath();
+        ctx.moveTo(ex - side * r * 0.9, y - r * 0.7); ctx.lineTo(ex + side * r * 0.6, y); ctx.lineTo(ex - side * r * 0.9, y + r * 0.7);
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; stroke(ctx, Math.max(2, r * 0.42));
+      }
+      return;
+    }
     const scary = o.mood === 'angry';
     if (!scary) {
       eyes(ctx, x, y, sp, r * 0.62, { seed: o.seed, sad: o.mood === 'sad', happy: o.mood === 'happy' });
@@ -133,6 +220,11 @@
 
   // Wide toothy grin when angry; a soft smile otherwise.
   function monsterGrin(ctx, x, y, w, o = {}) {
+    if (o.mood === 'ouch') {
+      // a wobbly little "oof"
+      D.ellipse(ctx, x, y + w * 0.16, w * 0.17, w * 0.2, '#3a1428', C.ink, Math.max(1.4, w * 0.06));
+      return;
+    }
     if (o.mood !== 'angry') {
       D.mouth(ctx, x, y, w * 0.45, o.mood === 'sad' ? 'sad' : 'smile');
       return;
@@ -182,9 +274,10 @@
     const dir = o.dir || 'down';
     const walk = o.walk || 0;
     const adult = !!o.adult;
-    const legH = (adult ? 11 : 7.5) * s;
-    const bodyH = (adult ? 25 : 16) * s;
-    const headR = (adult ? 15.5 : 18) * s;
+    // kids are chibi: a big head on a small body (v2.17 made the head bigger again)
+    const legH = (adult ? 11 : 6.5) * s;
+    const bodyH = (adult ? 25 : 14.5) * s;
+    const headR = (adult ? 16 : 20) * s;
     const bob = Math.abs(Math.sin(walk)) * 2 * s;
     const ground = y;
     y -= bob;
@@ -202,18 +295,27 @@
       ctx.fillStyle = o.pants || '#4b4b5a';
       ctx.fill();
       stroke(ctx, 1.6);
-      D.egg(ctx, lx + (side || k) * 0.8 * s, ground - lift - 1.6 * s, 4.4 * s, 2.7 * s, o.shoes || '#3a2c2a', { lw: 1.6 });
+      // chunky toy shoes with a shine on the toe: big feet read well from across the map
+      const fx = lx + (side || k) * 1.2 * s, fy = ground - lift - 2 * s;
+      D.egg(ctx, fx, fy, 5.6 * s, 3.4 * s, o.shoes || '#3a2c2a', { lw: 1.7 });
+      D.ellipse(ctx, fx + (side || k) * 1.4 * s, fy - 1.2 * s, 2.1 * s, 0.9 * s, 'rgba(255,255,255,.55)');
     }
     const tTop = y - legH - bodyH;
     const tBot = y - legH + 2 * s;
     // hood (behind the head)
     if (o.hood && !o.costume) D.egg(ctx, x - side * 2 * s, tTop + 1 * s, 13 * s, 6 * s, hexShade(top, -0.12), { lw: 2 });
-    // arms swing opposite to the legs
+    // arms: they swing opposite to the legs, and strike a pose for the mood (v2.18)
+    const pose = o.pose !== undefined ? o.pose : poseFor(o.mood, adult, o.talk);
     for (const k of [-1, 1]) {
-      const ax = x + k * 12.5 * s;
-      const ay = tTop + 8 * s + (k < 0 ? -sw : sw) * 0.5;
-      D.egg(ctx, ax, ay, 3.8 * s, 7 * s, o.suit || top, { rot: -k * 0.25, lw: 1.8 });
-      D.ball(ctx, ax + k * 1.2 * s, ay + 6.5 * s, 2.8 * s, skin, { lw: 1.5 });
+      const t = CK.time * (D.calm() ? 0 : 1);
+      let hx = x + k * 13.8 * s, hy = tTop + 13.5 * s + (k < 0 ? -sw : sw) * 0.6, fist = 2.9;
+      if (pose === 'cheer') { hx = x + k * 21 * s; hy = tTop - 5 * s + Math.sin(t * 8 + k) * 1.5 * s; }
+      else if (pose === 'wave' && k > 0) { hx = x + 21 * s + Math.sin(t * 9) * 2.2 * s; hy = tTop - 6 * s; }
+      else if (pose === 'startle') { hx = x + k * 19.5 * s; hy = tTop + 0.5 * s; fist = 3.1; }
+      else if (pose === 'droop') { hx = x + k * 5.5 * s; hy = tTop + 15 * s; }
+      else if (pose === 'fists') { hx = x + k * 15.5 * s; hy = tTop + 9.5 * s; fist = 3.5; }
+      limb(ctx, x + k * 8.8 * s, tTop + 3.5 * s, hx, hy, 3.7 * s, o.suit || top, s);
+      D.ball(ctx, hx, hy, fist * s, skin, { lw: 1.5 });
     }
     // torso: a soft rounded tunic, a little wider at the hem
     ctx.beginPath();
@@ -248,8 +350,8 @@
     const hx = x + side * 1.5 * s;
     const hy = tTop - headR + 4.5 * s;
     if (st === 'puff') {
-      D.ball(ctx, hx - headR * 0.9, hy - headR * 0.62, headR * 0.5, hair);
-      D.ball(ctx, hx + headR * 0.9, hy - headR * 0.62, headR * 0.5, hair);
+      D.ball(ctx, hx - headR * 0.92, hy - headR * 0.66, headR * 0.58, hair);
+      D.ball(ctx, hx + headR * 0.92, hy - headR * 0.66, headR * 0.58, hair);
     }
     if (st === 'long') {
       D.rr(ctx, hx - headR * 1.05, hy - headR * 0.3, headR * 2.1, headR * 1.45, headR * 0.5);
@@ -267,6 +369,7 @@
       D.ball(ctx, hx, hy - 0.5 * s, headR + 1 * s, hair, { lw: 2.2 });
     } else {
       hairFront(ctx, st, hx, hy, headR, hair, side, s);
+      if (st !== 'grey') hairShine(ctx, hx, hy, headR, s);
     }
     if (dir !== 'up') {
       const fx = hx + side * 4.5 * s;
@@ -277,7 +380,8 @@
         ctx.fillStyle = o.beard;
         ctx.fill();
       }
-      cqFace(ctx, fx, hy + 2.5 * s, headR / 18, { mood: o.mood, seed: o.seed });
+      const gaze = o.gaze || (side ? [side * 0.85, 0.15] : walk ? [0, 0.35] : undefined);
+      cqFace(ctx, fx, hy + (adult ? 2.5 : 1.2) * s, headR / 18, { mood: o.mood, seed: o.seed, cq: true, gaze, talk: o.talk });
       if (o.glasses) {
         const gs = headR / 18;
         ctx.beginPath();
@@ -290,10 +394,29 @@
         D.line(ctx, fx - 8.5 * gs, hy + 1 * s, fx - 6.5 * gs, hy - 0.5 * s, 'rgba(255,255,255,.8)', 1.2);
       }
     }
-    if (o.costume) D.costumeHat(ctx, o.costume, hx, hy + 1.5 * s, s * 1.18, dir);
+    if (o.scarf && !o.costume) airmailScarf(ctx, x, tTop, s, side, dir, walk);
+    if (o.goggles && !o.costume) goggles(ctx, hx, hy, headR, side, dir, o.goggles);
+    if (o.costume) D.costumeHat(ctx, o.costume, hx, hy - 1.5 * s, (headR / 18) * 1.18, dir);
     return { hx, hy, headR };
   }
   D.kid = kid;
+
+  // a soft sleeve from the shoulder to the hand: an egg stretched along the arm
+  function limb(ctx, sx, sy, hx, hy, w, col, s) {
+    const dx = hx - sx, dy = hy - sy, L = Math.hypot(dx, dy);
+    D.egg(ctx, (sx + hx) / 2, (sy + hy) / 2, w, L / 2 + 1.5 * s, col, { rot: Math.atan2(dy, dx) - Math.PI / 2, lw: 1.8 });
+  }
+  D.limb = limb;
+
+  // body language for a mood: happy kids cheer, grown-ups wave, a fright throws the arms out
+  function poseFor(mood, adult, talk) {
+    if (mood === 'happy') return adult ? 'wave' : 'cheer';
+    if (mood === 'shock') return 'startle';
+    if (mood === 'sad') return 'droop';
+    if (mood === 'angry') return 'fists';
+    return talk ? 'wave' : null;
+  }
+  D.poseFor = poseFor;
 
   function hairFront(ctx, st, x, y, r, hair, side, s) {
     ctx.beginPath();
@@ -310,8 +433,8 @@
       D.fillVol(ctx, x, y - r * 0.6, r, hair, 2.2);
       ctx.beginPath();
       ctx.moveTo(x - 2 * s, y - r - 0.5 * s);
-      ctx.quadraticCurveTo(x + 2 * s, y - r - 9 * s, x + 7 * s, y - r - 5 * s);
-      ctx.quadraticCurveTo(x + 3 * s, y - r - 3 * s, x + 2 * s, y - r);
+      ctx.quadraticCurveTo(x + 1 * s, y - r - 13 * s, x + 10 * s, y - r - 8 * s);
+      ctx.quadraticCurveTo(x + 4 * s, y - r - 4 * s, x + 2 * s, y - r);
       D.fillVol(ctx, x, y - r, r * 0.5, hair, 1.8);
       return;
     }
@@ -349,8 +472,82 @@
     D.fillVol(ctx, x, y - r * 0.6, r, hair, 2.2);
   }
 
-  CH.sam = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ hair: '#6b4426', style: 'mop', skin: '#f2c9a0', top: o.night ? '#5a6fb0' : '#6c8ed8', hood: true, pants: '#3f4f73', shoes: '#f3eee4', seed: 1 }, o));
-  CH.jules = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ hair: '#1f1a17', style: 'puff', skin: '#a8714a', top: o.night ? '#3e8a64' : '#4fb07f', pants: '#3d3a52', shoes: '#ef6b6b', seed: 7 }, o));
+  // a glossy band of light across the hair, so heads read as shiny toys rather than flat discs
+  function hairShine(ctx, x, y, r, s) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x - r * 0.08, y - r * 0.1, r * 0.8, Math.PI * 1.22, Math.PI * 1.52);
+    ctx.strokeStyle = 'rgba(255,255,255,.42)';
+    ctx.lineWidth = 2.4 * s;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.restore();
+  }
+  D.hairShine = hairShine;
+
+  // airmail stripes (red, paper, blue, paper) inside the shape that path() traces, then its outline
+  function airmailStripes(ctx, path, x0, y0, w, h, step, lw) {
+    path();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = '#fbf3e2';
+    ctx.fillRect(x0, y0, w, h);
+    const cols = ['#e2483a', '#2c56a3'];
+    for (let i = 0, xx = x0 - h; xx < x0 + w; i++, xx += step) {
+      ctx.fillStyle = cols[i % 2];
+      ctx.beginPath();
+      ctx.moveTo(xx, y0 + h); ctx.lineTo(xx + step * 0.5, y0 + h); ctx.lineTo(xx + step * 0.5 + h, y0); ctx.lineTo(xx + h, y0);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    path();
+    stroke(ctx, lw || 1.6);
+  }
+  D.airmailStripes = airmailStripes;
+
+  // Sam's scarf: the Kingdom Post's airmail edge, knitted. The tail swings when Sam walks.
+  function airmailScarf(ctx, x, tTop, s, side, dir, walk) {
+    const sway = Math.sin(CK.time * 3 + walk) * 1.4 * s + (side ? -side * 3 * s : 0);
+    const tx = x + (side ? -side * 6 : 5.5) * s;
+    // tail first, so the wrap sits over it
+    airmailStripes(ctx, () => {
+      ctx.beginPath();
+      ctx.moveTo(tx - 2.6 * s, tTop + 2 * s);
+      ctx.lineTo(tx + 2.6 * s, tTop + 2 * s);
+      ctx.lineTo(tx + 3 * s + sway, tTop + 13 * s);
+      ctx.lineTo(tx - 2.2 * s + sway, tTop + 13.5 * s);
+      ctx.closePath();
+    }, tx - 6 * s, tTop, 14 * s, 15 * s, 4 * s, 1.6);
+    for (let i = -1; i <= 1; i++) D.line(ctx, tx + i * 1.6 * s + sway + 0.4 * s, tTop + 13.5 * s, tx + i * 1.8 * s + sway + 0.4 * s, tTop + 15.5 * s, C.ink, 1.2);
+    airmailStripes(ctx, () => D.rr(ctx, x - 11 * s, tTop + 0.5 * s, 22 * s, 5.5 * s, 2.75 * s), x - 12 * s, tTop, 24 * s, 7 * s, 4 * s, 1.8);
+  }
+
+  // Jules's workshop goggles, pushed up on the forehead
+  function goggles(ctx, x, y, r, side, dir, col) {
+    const s = r / 20;
+    const gy = y - r * 0.56;
+    ctx.beginPath();
+    ctx.ellipse(x, gy + r * 0.12, r * 1.0, r * 0.3, 0, Math.PI * 1.02, Math.PI * 1.98, true);
+    stroke(ctx, 3.4 * s, '#3d3a52');
+    if (dir === 'up') return;
+    const cx = x + side * 3 * s;
+    for (const k of [-1, 1]) {
+      const lx = cx + k * r * 0.34, lr = r * 0.25;
+      const g = ctx.createLinearGradient(lx - lr, gy - lr, lx + lr, gy + lr);
+      g.addColorStop(0, '#d8f4ff');
+      g.addColorStop(1, '#4a9fdc');
+      ctx.beginPath(); ctx.arc(lx, gy, lr, 0, TAU);
+      ctx.fillStyle = g; ctx.fill();
+      ctx.lineWidth = 2.6 * s; ctx.strokeStyle = col === true ? '#ffc93c' : col; ctx.stroke();
+      ctx.beginPath(); ctx.arc(lx, gy, lr + 1.3 * s, 0, TAU); stroke(ctx, 1.4);
+      D.line(ctx, lx - lr * 0.45, gy - lr * 0.1, lx - lr * 0.05, gy - lr * 0.5, 'rgba(255,255,255,.9)', 1.6 * s);
+    }
+    D.line(ctx, cx - r * 0.09, gy, cx + r * 0.09, gy, C.ink, 2 * s);
+  }
+
+  CH.sam = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ hair: '#6b4426', style: 'mop', skin: '#f2c9a0', top: o.night ? '#5a6fb0' : '#6c8ed8', hood: true, scarf: true, pants: '#3f4f73', shoes: '#f3eee4', seed: 1 }, o));
+  CH.jules = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ hair: '#1f1a17', style: 'puff', skin: '#a8714a', top: o.night ? '#3e8a64' : '#4fb07f', pants: '#3d3a52', shoes: '#ef6b6b', goggles: '#ffc93c', seed: 7 }, o));
   CH.human = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ skin: '#e8b48a', seed: 4 }, o));
   CH.okafor = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ adult: true, hair: '#2a2420', skin: '#7a4a2e', top: '#c7865a', pants: '#4a4036', style: 'short', glasses: true, seed: 8, cardigan: '#8a5a3a', beard: '#3a2a20' }, o));
   CH.grandma = (ctx, x, y, o) => kid(ctx, x, y, Object.assign({ adult: true, hair: '#e8e4ec', skin: '#f0c7a6', top: '#e88aa8', pants: '#6a5a7a', style: 'grey', glasses: '#8a5a7a', seed: 9, cardigan: '#fffaf0' }, o));
@@ -504,14 +701,38 @@
     y -= bob;
     const fur = '#c58b52';
     const sw = Math.sin(walk) * 3 * s;
+    const wear = o.costume && o.costume !== 'knight';
+    if (!wear) {
+      // a knight's cape in Kingdom Post violet, flaring a little at the hem
+      const fl = Math.sin(CK.time * 2.4 + walk) * 1.5 * s;
+      ctx.beginPath();
+      ctx.moveTo(x - 14 * s, y - 33 * s);
+      ctx.lineTo(x + 14 * s, y - 33 * s);
+      ctx.quadraticCurveTo(x + 22 * s, y - 18 * s, x + 24 * s + fl, y - 1 * s);
+      ctx.quadraticCurveTo(x + 12 * s, y + 2 * s, x, y - 0.5 * s);
+      ctx.quadraticCurveTo(x - 12 * s, y + 2 * s, x - 24 * s - fl, y - 1 * s);
+      ctx.quadraticCurveTo(x - 22 * s, y - 18 * s, x - 14 * s, y - 33 * s);
+      ctx.closePath();
+      D.fillVol(ctx, x - 4 * s, y - 20 * s, 22 * s, '#6a4bb5', 2);
+    }
     for (const k of [-1, 1]) {
       const lift = k < 0 ? Math.max(0, sw) : Math.max(0, -sw);
       D.egg(ctx, x + k * 6 * s, ground - 4 * s - lift, 5 * s, 5 * s, hexShade(fur, -0.12), { lw: 1.8 });
     }
-    // arms (paws)
-    for (const k of [-1, 1]) D.egg(ctx, x + k * 15.5 * s, y - 21 * s + (k < 0 ? -sw : sw) * 0.5, 4.5 * s, 7.5 * s, fur, { rot: -k * 0.3, lw: 1.8 });
+    // arms (paws), posed for the mood like the kids
+    const pose = o.pose !== undefined ? o.pose : poseFor(o.mood, false, o.talk);
+    const t = D.calm() ? 0 : CK.time;
+    for (const k of [-1, 1]) {
+      let hx = x + k * 18.5 * s, hy = y - 15 * s + (k < 0 ? -sw : sw) * 0.5;
+      if (pose === 'cheer') { hx = x + k * 21 * s; hy = y - 37 * s + Math.sin(t * 7 + k) * 1.5 * s; }
+      else if (pose === 'wave' && k > 0) { hx = x + 22 * s + Math.sin(t * 8) * 2 * s; hy = y - 38 * s; }
+      else if (pose === 'startle') { hx = x + k * 23 * s; hy = y - 26 * s; }
+      else if (pose === 'droop') { hx = x + k * 8 * s; hy = y - 9 * s; }
+      else if (pose === 'fists') { hx = x + k * 19 * s; hy = y - 18 * s; }
+      limb(ctx, x + k * 11 * s, y - 27 * s, hx, hy, 4.6 * s, fur, s);
+      D.ball(ctx, hx, hy, 4.2 * s, hexShade(fur, 0.08), { lw: 1.8 });
+    }
     // fridge-box breastplate
-    const wear = o.costume && o.costume !== 'knight';
     if (wear) {
       ctx.beginPath(); ctx.ellipse(x, y - 18 * s, 13 * s, 12 * s, 0, 0, TAU);
       D.fillVol(ctx, x, y - 18 * s, 14 * s, fur, 2);
@@ -535,8 +756,9 @@
     if (dir !== 'up') {
       const fx = x + side * 4 * s;
       D.egg(ctx, fx, hy + 7 * s, 8 * s, 6 * s, '#efcfa6', { lw: 1.5 });
-      D.egg(ctx, fx, hy + 4 * s, 3.2 * s, 2.4 * s, '#3a2418', { lw: 0 });
-      cqFace(ctx, fx, hy - 1.5 * s, 0.92 * s, { mood: o.mood, seed: 2 });
+      D.egg(ctx, fx, hy + 2.6 * s, 3.1 * s, 2.1 * s, '#3a2418', { lw: 0 });
+      D.ellipse(ctx, fx - 1 * s, hy + 1.9 * s, 1 * s, 0.6 * s, 'rgba(255,255,255,.7)');
+      cqFace(ctx, fx, hy - 1.5 * s, 0.92 * s, { mood: o.mood, seed: 2, w: true, talk: o.talk, gaze: side ? [side * 0.8, 0] : o.gaze });
     }
     if (o.costume && o.costume !== 'knight') D.costumeHat(ctx, o.costume, x, hy, s * 1.15, dir);
     else {
@@ -565,14 +787,22 @@
     D.poly(ctx, [0, -16 * s, 12 * s, -6 * s, 0, 2 * s], dark, C.ink, 2);
     D.poly(ctx, [-12 * s, -6 * s, -20 * s, -14 * s, -16 * s, -4 * s], mid, C.ink, 2);
     D.poly(ctx, [6 * s, -10 * s, 14 * s, -28 * s, 17 * s, -26 * s, 10 * s, -8 * s], lit, C.ink, 2);
-    D.poly(ctx, [14 * s, -28 * s, 24 * s, -26 * s, 17 * s, -24 * s], '#ffad3b', C.ink, 1.5);
-    D.circle(ctx, 15.5 * s, -27 * s, 1.7 * s, C.ink);
-    D.circle(ctx, 15.9 * s, -27.5 * s, 0.6 * s, '#fff');
-    D.ellipse(ctx, 14 * s, -24.5 * s, 2 * s, 1.2 * s, 'rgba(255,105,120,0.5)');
+    // v2.17: a bigger folded head with a real sparkly eye, and the squire's mail satchel
+    D.poly(ctx, [26 * s, -35 * s, 37 * s, -31.5 * s, 26.5 * s, -28 * s], '#ffad3b', C.ink, 1.5);
+    D.poly(ctx, [6 * s, -31 * s, 17 * s, -44 * s, 28.5 * s, -32 * s, 16.5 * s, -20 * s], lit, C.ink, 2);
+    D.poly(ctx, [6 * s, -31 * s, 17 * s, -44 * s, 16.8 * s, -31.5 * s], mid);
+    D.poly(ctx, [6 * s, -31 * s, 16.8 * s, -31.5 * s, 16.5 * s, -20 * s], '#f8f4ef');
+    D.poly(ctx, [6 * s, -31 * s, 17 * s, -44 * s, 28.5 * s, -32 * s, 16.5 * s, -20 * s], null, C.ink, 2);
+    sparkleEye(ctx, 19.2 * s, -33 * s, 2.8 * s, 3.6 * s, '#4a3a5a');
+    D.ellipse(ctx, 14.2 * s, -27.6 * s, 3 * s, 1.7 * s, 'rgba(255,105,120,0.55)');
     D.poly(ctx, [12 * s, -22 * s, 18 * s, -21 * s, 10 * s, -17 * s], '#ef6b6b', C.ink, 1);
+    D.line(ctx, -2 * s, -6 * s, 6 * s, -15 * s, '#8a5a3a', 1.6 * s);
+    D.rr(ctx, -7.5 * s, -6.5 * s, 10 * s, 7 * s, 1.2 * s); ctx.fillStyle = '#fbf3e2'; ctx.fill(); stroke(ctx, 1.4);
+    ctx.beginPath(); ctx.moveTo(-7.5 * s, -6.5 * s); ctx.lineTo(-2.5 * s, -2.6 * s); ctx.lineTo(2.5 * s, -6.5 * s); stroke(ctx, 1.1);
+    D.circle(ctx, -2.5 * s, -2.6 * s, 1.3 * s, '#e2483a');
     D.poly(ctx, [2 * s, -10 * s, 14 * s, -26 * s + fl * 10 * s, 8 * s, -6 * s], lit, C.ink, 2);
     ctx.restore();
-    if (o.costume) D.costumeHat(ctx, o.costume, x + 4 * flip * s, y - 24 * s, s * 0.6, o.dir);
+    if (o.costume) D.costumeHat(ctx, o.costume, x + 17 * flip * s, y - 35 * s, s * 0.7, o.dir);
   };
 
   // ----------------------------------------------- the kingdom's critters
@@ -585,6 +815,15 @@
     // little cardboard box body, every critter wears one
     D.box3(ctx, x - 10 * s, y - 18 * s, 20 * s, 17 * s, 4 * s, { fill: o.box || C.card, lw: 1.8, fstep: 4 * s, r: 3 * s });
     for (const k of [-1, 1]) D.egg(ctx, x + k * 6 * s, y - 1.5 * s, 4 * s, 2.5 * s, hexShade(col, -0.15), { lw: 1.5 });
+    // little paws holding the box up, or waving, cheering and flinching (v2.18)
+    const pose = o.pose !== undefined ? o.pose : poseFor(o.mood, false, o.talk);
+    const t = D.calm() ? 0 : CK.time;
+    for (const k of [-1, 1]) {
+      let px = x + k * (k > 0 ? 13.5 : 11) * s, py = y - 11 * s, rot = k * 0.35;
+      if (pose === 'cheer' || (pose === 'wave' && k > 0)) { px = x + k * 15 * s + (pose === 'wave' ? Math.sin(t * 9) * 1.8 * s : 0); py = y - 25 * s + Math.sin(t * 8 + k) * s; rot = -k * 0.4; }
+      else if (pose === 'startle') { px = x + k * 17 * s; py = y - 17 * s; rot = k * 1.2; }
+      D.egg(ctx, px, py, 3.1 * s, 4 * s, col, { rot, lw: 1.6 });
+    }
     if (o.scarf) {
       D.rr(ctx, x - 12 * s, y - 21 * s, 24 * s, 5 * s, 2.5 * s); ctx.fillStyle = o.scarf; ctx.fill(); stroke(ctx, 1.4);
       D.rr(ctx, x + 4 * s, y - 18 * s, 4 * s, 9 * s, 1.5 * s); ctx.fill(); stroke(ctx, 1.4);
@@ -593,8 +832,10 @@
     const R = 15 * s;
     if (sp === 'bunny') {
       for (const k of [-1, 1]) {
-        D.egg(ctx, x + k * 6.5 * s, hy - 18 * s, 4.5 * s, 12 * s, col, { rot: k * 0.15, lw: 2 });
-        D.ellipse(ctx, x + k * 6.5 * s, hy - 18 * s, 2.2 * s, 8 * s, '#ffb7c9', null, 0, k * 0.15);
+        // ears twitch now and then
+        const tw = k > 0 && !D.calm() ? Math.max(0, Math.sin(CK.time * 9 + (o.seed || 0))) * (Math.sin(CK.time * 0.9 + (o.seed || 0)) > 0.7 ? 0.35 : 0) : 0;
+        D.egg(ctx, x + k * 6.5 * s, hy - 18 * s, 4.5 * s, 12 * s, col, { rot: k * (0.15 + tw), lw: 2 });
+        D.ellipse(ctx, x + k * 6.5 * s, hy - 18 * s, 2.2 * s, 8 * s, '#ffb7c9', null, 0, k * (0.15 + tw));
       }
     } else if (sp === 'fox' || sp === 'cat') {
       for (const k of [-1, 1]) D.poly(ctx, [x + k * 13 * s, hy - 4 * s, x + k * 10 * s, hy - 21 * s, x + k * 2 * s, hy - 11 * s], col, C.ink, 2);
@@ -622,13 +863,13 @@
         D.circle(ctx, x + 6 * s, hy - 1 * s, 6 * s, '#fff4e0', C.ink, 1.5);
       }
       if (sp === 'robin') D.egg(ctx, x, hy + 7 * s, 8 * s, 6 * s, '#f07a4a', { lw: 0 });
-      cqFace(ctx, x, hy - 2.5 * s, fs, { mood: o.mood, seed: o.seed });
+      cqFace(ctx, x, hy - 2.5 * s, fs, { mood: o.mood, seed: o.seed, gaze: o.gaze, talk: o.talk });
       const beak = sp === 'duck' ? [x - 6.5 * s, hy + 4 * s, x + 6.5 * s, hy + 4 * s, x, hy + 10 * s] : [x - 3 * s, hy + 3.5 * s, x + 3 * s, hy + 3.5 * s, x, hy + 9 * s];
       D.poly(ctx, beak, '#ffad3b', C.ink, 1.5);
     } else {
       if (sp === 'fox') D.egg(ctx, x, hy + 7 * s, 8 * s, 5.5 * s, '#fff5ea', { lw: 0 });
       if (sp === 'bear' || sp === 'mouse') D.egg(ctx, x, hy + 6 * s, 6 * s, 4.5 * s, D.shade(col, 0.4), { lw: 0 });
-      cqFace(ctx, x, hy - 1.5 * s, fs, { mood: o.mood, seed: o.seed });
+      cqFace(ctx, x, hy - 1.5 * s, fs, { mood: o.mood, seed: o.seed, w: true, gaze: o.gaze, talk: o.talk });
       D.egg(ctx, x, hy + 4 * s, 2 * s, 1.5 * s, '#3a2418', { lw: 0 });
     }
     // hats
@@ -649,7 +890,66 @@
       D.rr(ctx, x - 18 * s, hy - 6 * s, 36 * s, 4 * s, 2); ctx.fillStyle = '#f0b52a'; ctx.fill(); stroke(ctx, 1.6);
     }
     if (o.hat === 'crown') D.poly(ctx, [x - 9 * s, hy - 11 * s, x - 9 * s, hy - 22 * s, x - 4 * s, hy - 15 * s, x, hy - 24 * s, x + 4 * s, hy - 15 * s, x + 9 * s, hy - 22 * s, x + 9 * s, hy - 11 * s], '#ffd25a', C.ink, 2);
+    // v2.24: signature things the named neighbours carry, so you can tell them apart from a distance
+    if (o.prop) critterProp(ctx, x, y, hy, s, o.prop, o);
   };
+  function critterProp(ctx, x, y, hy, s, prop, o) {
+    const t = D.calm() ? 0 : CK.time + (o.seed || 0);
+    switch (prop) {
+      case 'mailbag': // Robin: a satchel stuffed with letters, strap over one shoulder
+        D.line(ctx, x - 9 * s, y - 19 * s, x + 11 * s, y - 7 * s, '#7a4a2a', 2.6 * s);
+        D.rr(ctx, x + 6 * s, y - 10 * s, 14 * s, 10 * s, 2.5 * s); ctx.fillStyle = '#c4543a'; ctx.fill(); stroke(ctx, 1.5);
+        D.rr(ctx, x + 8 * s, y - 14 * s, 9 * s, 5 * s, 1); ctx.fillStyle = '#fffaf0'; ctx.fill(); stroke(ctx, 1);
+        D.poly(ctx, [x + 6 * s, y - 10 * s, x + 20 * s, y - 10 * s, x + 13 * s, y - 5 * s], '#a8402c', C.ink, 1.2);
+        break;
+      case 'specs': // Professor Hoot: round reading glasses
+        for (const k of [-1, 1]) { ctx.beginPath(); ctx.arc(x + k * 6 * s, hy - 1 * s, 6.6 * s, 0, Math.PI * 2); stroke(ctx, 1.6, '#5a3a22'); }
+        D.line(ctx, x - 0.8 * s, hy - 2 * s, x + 0.8 * s, hy - 2 * s, '#5a3a22', 1.6);
+        ctx.save(); ctx.globalAlpha *= 0.5; D.line(ctx, x - 8 * s, hy - 4 * s, x - 5 * s, hy - 6 * s, '#fff', 1.4); D.line(ctx, x + 4 * s, hy - 4 * s, x + 7 * s, hy - 6 * s, '#fff', 1.4); ctx.restore();
+        break;
+      case 'rake': // Bristle: a leaf rake, taller than Bristle
+        D.line(ctx, x + 17 * s, y - 1 * s, x + 21 * s, y - 46 * s, '#a8774c', 2.6 * s);
+        D.line(ctx, x + 13 * s, y - 47 * s, x + 29 * s, y - 45 * s, '#7a7a86', 2.4 * s);
+        for (let i = 0; i < 5; i++) D.line(ctx, x + (13.5 + i * 3.8) * s, y - 46.5 * s, x + (12 + i * 4.4) * s, y - 54 * s, '#7a7a86', 1.4 * s);
+        D.poly(ctx, [x + 22 * s, y - 52 * s, x + 26 * s, y - 58 * s, x + 29 * s, y - 52 * s, x + 25 * s, y - 50 * s], '#e8743b', C.ink, 1);
+        break;
+      case 'sketchbook': // Ember: a sketchbook hugged to her chest, pencil tucked in
+        ctx.save(); ctx.translate(x - 1 * s, y - 10 * s); ctx.rotate(-0.12);
+        D.rr(ctx, -8 * s, -6 * s, 15 * s, 12 * s, 1.5 * s); ctx.fillStyle = '#5aa9e6'; ctx.fill(); stroke(ctx, 1.5);
+        D.rr(ctx, -6 * s, -4 * s, 11 * s, 8 * s, 1); ctx.fillStyle = '#fffaf0'; ctx.fill();
+        D.line(ctx, -4 * s, 1 * s, 3 * s, -2 * s, '#ef6b6b', 1.2); D.line(ctx, -4 * s, -1.5 * s, 0, 1.5 * s, '#f2a93b', 1.2);
+        D.line(ctx, 6 * s, -9 * s, 9 * s, 4 * s, '#ffcf3a', 2.2 * s); D.circle(ctx, 9 * s, 4.5 * s, 1 * s, '#ff9fb6');
+        ctx.restore();
+        break;
+      case 'knitting': { // Mama Burrow: a ball of wool and two needles, mid-scarf
+        D.ball(ctx, x + 14 * s, y - 5 * s, 5 * s, '#ef6b6b', { lw: 1.4 });
+        ctx.beginPath(); ctx.arc(x + 14 * s, y - 5 * s, 3 * s, 0.4, 2.6); stroke(ctx, 1, 'rgba(120,20,20,.45)');
+        const w = Math.sin(t * 5) * 1.2 * s;
+        D.line(ctx, x + 10 * s, y - 13 * s, x + 18 * s + w, y - 22 * s, '#d9c08a', 1.6);
+        D.line(ctx, x + 13 * s, y - 13 * s, x + 21 * s - w, y - 21 * s, '#d9c08a', 1.6);
+        D.rr(ctx, x + 9 * s, y - 15 * s, 8 * s, 6 * s, 2); ctx.fillStyle = '#ffd25a'; ctx.fill(); stroke(ctx, 1.1);
+        break;
+      }
+      case 'pencil': // Nib: a pencil behind one ear, a tape measure at the hip
+        D.line(ctx, x + 6 * s, hy - 8 * s, x + 17 * s, hy - 17 * s, '#ffcf3a', 2.6 * s);
+        D.line(ctx, x + 15.5 * s, hy - 15.8 * s, x + 17 * s, hy - 17 * s, '#ff9fb6', 2.6 * s);
+        D.ball(ctx, x - 13 * s, y - 5 * s, 4 * s, '#ffc93c', { lw: 1.3 }); D.circle(ctx, x - 13 * s, y - 5 * s, 1.4 * s, '#7a7a86');
+        break;
+      case 'pitcher': // Dabble: a jug of homemade orange juice for the stand she hasn't opened yet
+        D.poly(ctx, [x + 9 * s, y - 15 * s, x + 19 * s, y - 15 * s, x + 21 * s, y - 1 * s, x + 7 * s, y - 1 * s], 'rgba(220,240,255,.85)', C.ink, 1.4);
+        D.poly(ctx, [x + 8.2 * s, y - 9 * s, x + 19.8 * s, y - 9 * s, x + 20.8 * s, y - 2 * s, x + 7.2 * s, y - 2 * s], '#ffad3b');
+        D.circle(ctx, x + 14 * s, y - 11 * s, 1.2 * s, '#fffaf0');
+        break;
+      case 'lantern': { // Clover, after she gets brave: her own paper lantern on a stick
+        D.line(ctx, x - 13 * s, y - 9 * s, x - 18 * s, y - 34 * s, '#8a5a3a', 2 * s);
+        const sw = Math.sin(t * 2.4) * 1.5 * s, night = CK.OW && CK.OW.night;
+        if (night) D.circle(ctx, x - 20 * s + sw, y - 26 * s, 13 * s, 'rgba(255,220,120,.28)');
+        D.line(ctx, x - 18 * s, y - 34 * s, x - 20 * s + sw, y - 31 * s, C.ink, 1);
+        D.egg(ctx, x - 20 * s + sw, y - 26 * s, 5 * s, 6 * s, night ? '#ffe38a' : '#ff9fb6', { lw: 1.4 });
+        break;
+      }
+    }
+  }
 
   // Mayor Mossworth: a cardboard tortoise in a top hat
   CH.mayor = function (ctx, x, y, o) {
@@ -657,7 +957,7 @@
     D.egg(ctx, x - 12 * s, y - 3 * s, 5 * s, 3.5 * s, '#9bd07a', { lw: 1.5 });
     D.egg(ctx, x + 8 * s, y - 3 * s, 5 * s, 3.5 * s, '#9bd07a', { lw: 1.5 });
     D.ball(ctx, x + 17 * s, y - 17 * s, 11 * s, '#9bd07a', { lw: 2 });
-    cqFace(ctx, x + 19 * s, y - 18 * s, 0.55 * s, { mood: o.mood, seed: 4 });
+    cqFace(ctx, x + 19 * s, y - 18 * s, 0.55 * s, { mood: o.mood, seed: 4, w: true });
     ctx.beginPath(); ctx.arc(x - 2 * s, y - 6 * s, 19 * s, Math.PI, 0); ctx.closePath();
     D.fillVol(ctx, x - 6 * s, y - 14 * s, 18 * s, C.card, 2);
     ctx.save(); ctx.clip();
@@ -697,7 +997,7 @@
     for (const k of [-1, 1]) D.poly(ctx, [x + k * 11 * s, hy - 3 * s, x + k * 9.5 * s, hy - 16 * s, x + k * 2 * s, hy - 9 * s], col, C.ink, 2);
     for (const k of [-1, 1]) D.poly(ctx, [x + k * 9.5 * s, hy - 6 * s, x + k * 8.6 * s, hy - 13 * s, x + k * 4.5 * s, hy - 9 * s], '#ffb7c9');
     D.ball(ctx, x, hy, 11 * s, col, { lw: 2, k: 0.6 });
-    cqFace(ctx, x, hy - 1 * s, 0.58 * s, { mood: o.mood === 'happy' || o.purr ? 'happy' : null, seed: 5 });
+    cqFace(ctx, x, hy - 1 * s, 0.58 * s, { mood: o.mood === 'happy' || o.purr ? 'happy' : null, seed: 5, w: true });
     D.poly(ctx, [x - 1.5 * s, hy + 2.5 * s, x + 1.5 * s, hy + 2.5 * s, x, hy + 4.5 * s], '#ff8fa8');
     D.line(ctx, x - 6 * s, hy + 3.5 * s, x - 14 * s, hy + 1.5 * s, C.ink, 1);
     D.line(ctx, x + 6 * s, hy + 3.5 * s, x + 14 * s, hy + 1.5 * s, C.ink, 1);
@@ -939,34 +1239,106 @@
 
   D.char = function (ctx, look, x, y, o) {
     o = o || {};
-    if (!o.noShadow) D.shadow(ctx, x, y, 14 * (o.s || 1), 5 * (o.s || 1));
     const f = CH[look] || CH.critter;
-    // a little life: idle breathing, and squash-and-stretch on every step
+    // a little life: idle breathing, squash-and-stretch on every step, a lean into the walk,
+    // and every so often a happy little hop (v2.18). Reduce motion keeps only the pose.
     const seed = o.seed != null ? o.seed : look.length * 1.7;
-    let sx = 1, sy = 1;
+    const calm = D.calm();
+    let sx = 1, sy = 1, lift = 0, lean = 0;
     if (o.walk) {
       const k = Math.abs(Math.cos(o.walk)) - 0.5;
-      sx = 1 + k * 0.06;
-      sy = 1 - k * 0.06;
-    } else if (!o.still) {
-      const b = Math.sin(CK.time * 2.2 + seed) * 0.018;
+      sx = 1 + k * 0.08;
+      sy = 1 - k * 0.08;
+      lean = o.dir === 'left' ? -0.07 : o.dir === 'right' ? 0.07 : 0;
+    } else if (!o.still && !calm) {
+      const b = Math.sin(CK.time * 2.2 + seed) * 0.02;
       sx = 1 - b * 0.5;
       sy = 1 + b;
+      const hop = hopAt(CK.time + seed * 1.3, o.mood === 'happy' ? 1.3 : 6.5);
+      sx *= hop.sx; sy *= hop.sy; lift = hop.lift * (o.portrait ? 3 : 6) * (o.s || 1);
+      if (o.mood === 'shock') lean = Math.sin(CK.time * 40) * 0.025;
     }
-    if (sx !== 1) {
+    if (!o.noShadow) D.shadow(ctx, x, y, 14 * (o.s || 1) * (1 - lift / (30 * (o.s || 1))), 5 * (o.s || 1));
+    if (o.walk && !calm && !o.noShadow) {
+      // a puff of dust kicked up behind each step, growing and fading until the next one
+      const ph = ((o.walk % Math.PI) + Math.PI) % Math.PI / Math.PI, sc = o.s || 1;
+      const back = o.dir === 'left' ? 1 : o.dir === 'right' ? -1 : 0;
+      const px = x + back * (9 + ph * 6) * sc + (back ? 0 : (Math.floor(o.walk / Math.PI) % 2 ? -5 : 5) * sc);
+      ctx.fillStyle = `rgba(255,250,240,${0.55 * (1 - ph)})`;
+      ctx.beginPath(); ctx.arc(px, y - (2 + ph * 4) * sc, (2 + ph * 3) * sc, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(px + back * 3 * sc, y - (1 + ph * 2) * sc, (1.4 + ph * 2) * sc, 0, TAU); ctx.fill();
+    }
+    if (sx !== 1 || sy !== 1 || lift || lean) {
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translate(x, y - lift);
+      if (lean) ctx.rotate(lean);
       ctx.scale(sx, sy);
       f(ctx, 0, 0, o);
       ctx.restore();
     } else f(ctx, x, y, o);
   };
 
-  // ---------------------------------------------------- portrait (dialogue)
-  D.portrait = function (ctx, who, x, y, mood) {
-    const P = CK.Data.speakers[who] || {};
+  // One hop every `period` seconds: crouch, spring up, land with a squash.
+  function hopAt(t, period) {
+    const p = ((t % period) + period) % period;
+    if (p < 0.1) { const k = Math.sin((p / 0.1) * Math.PI); return { sx: 1 + 0.08 * k, sy: 1 - 0.1 * k, lift: 0 }; }
+    if (p < 0.42) { const k = (p - 0.1) / 0.32; return { sx: 0.95, sy: 1.06, lift: Math.sin(k * Math.PI) }; }
+    if (p < 0.52) { const k = Math.sin(((p - 0.42) / 0.1) * Math.PI); return { sx: 1 + 0.07 * k, sy: 1 - 0.08 * k, lift: 0 }; }
+    return { sx: 1, sy: 1, lift: 0 };
+  }
+  D.hopAt = hopAt;
+
+  // An Animal Crossing style thought bubble: pops in, floats a moment, fades. age is seconds shown.
+  D.emote = function (ctx, x, y, kind, age) {
+    if (!(age >= 0) || age > 2.2) return;
+    const calm = D.calm();
+    const u = Math.min(1, age / 0.3) - 1; // ease-out-back: a little overshoot, then settle
+    const pop = calm ? 1 : 1 + 2.7 * u * u * u + 1.7 * u * u;
+    const a = age > 1.8 ? 1 - (age - 1.8) / 0.4 : 1;
+    const k = Math.max(0.01, pop);
     ctx.save();
-    D.rr(ctx, x, y, 110, 110, 14);
+    ctx.globalAlpha *= a;
+    ctx.translate(x, y - (calm ? 0 : age * 4));
+    ctx.scale(k, k);
+    // bubble with a little tail pointing at the speaker
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 15, 13, 0, 0, TAU);
+    ctx.moveTo(-4, 11); ctx.lineTo(-7, 20); ctx.lineTo(3, 12);
+    ctx.fillStyle = '#fffdf8'; ctx.fill();
+    stroke(ctx, 2.2);
+    D.ellipse(ctx, -2.5, 10.5, 4.5, 2.2, '#fffdf8');
+    if (kind === 'heart') D.heart(ctx, 0, 3, 12, '#ef5a6f');
+    else if (kind === 'bang') {
+      // "your turn!"
+      D.rr(ctx, -2.6, -8.5, 5.2, 11, 2.6); ctx.fillStyle = '#ef6b3a'; ctx.fill();
+      D.circle(ctx, 0, 6.5, 2.8, '#ef6b3a');
+    } else if (kind === 'sweat') {
+      // "ouch": a sweat drop
+      ctx.beginPath(); ctx.moveTo(0, -9); ctx.quadraticCurveTo(7.5, 1, 6, 4.5); ctx.arc(0, 4, 6, 0.1, Math.PI - 0.1); ctx.quadraticCurveTo(-7.5, 1, 0, -9);
+      ctx.fillStyle = '#5aa9e6'; ctx.fill();
+      D.ellipse(ctx, -2.2, 3, 1.4, 2.4, 'rgba(255,255,255,.85)');
+    }
+    else if (kind === 'note') {
+      ctx.fillStyle = '#5b3fa0'; ctx.strokeStyle = '#5b3fa0'; ctx.lineWidth = 2.2;
+      D.ellipse(ctx, -3.5, 5, 3.4, 2.6, '#5b3fa0', null, 0, -0.35);
+      ctx.beginPath(); ctx.moveTo(-0.5, 4.5); ctx.lineTo(-0.5, -7); ctx.quadraticCurveTo(4, -5, 6, -1.5); ctx.stroke();
+    } else if (kind === 'sparkle') {
+      D.star(ctx, 0, 0, 8, '#ffc93c', 4, 0);
+      D.circle(ctx, 7, -6, 1.6, '#ffc93c');
+    } else {
+      // a tiny smiling face
+      D.circle(ctx, -3.5, -2, 1.6, C.ink); D.circle(ctx, 3.5, -2, 1.6, C.ink);
+      ctx.beginPath(); ctx.arc(0, 1, 4.2, Math.PI * 0.15, Math.PI * 0.85); stroke(ctx, 2);
+    }
+    ctx.restore();
+  };
+
+  // ---------------------------------------------------- portrait (dialogue)
+  D.portrait = function (ctx, who, x, y, mood, po) {
+    const P = CK.Data.speakers[who] || {};
+    const bare = po && po.bare; // inside a stamp: square, no frame of its own
+    ctx.save();
+    D.rr(ctx, x, y, 110, 110, bare ? 0 : 14);
     const bg = P.bg || '#fff3dc';
     const g = ctx.createRadialGradient(x + 40, y + 30, 5, x + 55, y + 55, 90);
     g.addColorStop(0, D.shade(bg, 0.5));
@@ -975,10 +1347,11 @@
     ctx.fill();
     ctx.clip();
     const look = P.look || 'critter';
-    const o = Object.assign({ s: P.ps || 2.1, mood, dir: 'down', seed: 2 }, P.o || {});
+    const o = Object.assign({ s: P.ps || 2.1, mood, dir: 'down', seed: 2, portrait: true, talk: CK.talkingWho === who }, P.o || {});
     const off = P.py || 0;
-    D.char(ctx, look, x + 55, y + 128 + off, Object.assign(o, { noShadow: true }));
+    D.char(ctx, look, x + 55 + (P.px || 0), y + 128 + off, Object.assign(o, { noShadow: true }));
     ctx.restore();
+    if (bare) return;
     D.rr(ctx, x, y, 110, 110, 14);
     ctx.strokeStyle = C.ink;
     ctx.lineWidth = 3;
@@ -989,6 +1362,8 @@
   // The costume becomes real, Costume Quest style. The wearer's face peeks out of a window.
   function peekFace(ctx, who, x, y, r, mood) {
     const s = r / 18;
+    // v2.22: a paint job (closet.js) asks where the faces are, so it can leave them unpainted
+    if (D._faceRec) { const m = ctx.getTransform(); D._faceRec.push([m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f, r * 1.08 * Math.hypot(m.a, m.b)]); }
     const looks = {
       sam: { skin: '#f2c9a0', hair: '#6b4426', style: 'mop' },
       jules: { skin: '#a8714a', hair: '#1f1a17', style: 'puff' },
@@ -997,8 +1372,9 @@
       for (const k of [-1, 1]) D.ball(ctx, x + k * 13 * s, y - 12 * s, 6 * s, '#c58b52', { lw: 1.8 });
       D.ball(ctx, x, y, r, '#c58b52', { lw: 2, k: 0.7 });
       D.egg(ctx, x, y + 7 * s, 8 * s, 6 * s, '#efcfa6', { lw: 1.4 });
-      D.egg(ctx, x, y + 4 * s, 3.2 * s, 2.4 * s, '#3a2418', { lw: 0 });
-      cqFace(ctx, x, y - 1.5 * s, 0.92 * s, { mood, seed: 2 });
+      D.egg(ctx, x, y + 2.6 * s, 3.1 * s, 2.1 * s, '#3a2418', { lw: 0 });
+      D.ellipse(ctx, x - 1 * s, y + 1.9 * s, 1 * s, 0.6 * s, 'rgba(255,255,255,.7)');
+      cqFace(ctx, x, y - 1.5 * s, 0.92 * s, { mood, seed: 2, w: true });
       return;
     }
     if (who === 'pip') {
@@ -1014,7 +1390,9 @@
     }
     D.ball(ctx, x, y, r, L.skin, { lw: 2, k: 0.6 });
     hairFront(ctx, L.style, x, y, r, L.hair, 0, s);
-    cqFace(ctx, x, y + 2.5 * s, s, { mood, seed: who === 'jules' ? 7 : 1 });
+    hairShine(ctx, x, y, r, s);
+    cqFace(ctx, x, y + 1.5 * s, s, { mood, seed: who === 'jules' ? 7 : 1, cq: true, gaze: mood === 'sad' ? [0, 0.5] : [0.6, 0.05] });
+    if (who === 'jules') goggles(ctx, x, y, r, 0, 'down', '#ffc93c');
   }
   D.peekFace = peekFace;
 
@@ -1038,6 +1416,16 @@
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(s, s);
+    // v2.18: giants breathe, and the one whose turn it is bounces on the spot, ready to go
+    if (!D.calm() && !o.still) {
+      const br = Math.sin(t * 2.2 + (o.seed || 0)) * 0.022;
+      let sx = 1 - br * 0.5, sy = 1 + br, lift = 0;
+      if (o.mood === 'happy') { const h = hopAt(t + (o.seed || 0) * 0.3, 1.15); sx *= h.sx; sy *= h.sy; lift = h.lift * 10; }
+      else if (o.mood === 'sad') { sy *= 0.97; sx *= 1.02; }
+      if (o.flash) { ctx.translate(Math.sin(t * 60) * 3, 0); }
+      ctx.translate(0, -lift);
+      ctx.scale(sx, sy);
+    }
     if (o.flash) ctx.filter = 'brightness(1.8)';
     switch (type) {
       case 'knight': {
@@ -1060,12 +1448,13 @@
         ctx.quadraticCurveTo(0, -204 + b, 30, -192 + b); ctx.lineTo(34, -132 + b);
         ctx.quadraticCurveTo(0, -126 + b, -34, -132 + b);
         ctx.fillStyle = D.lgx(ctx, -34, 34, '#c9d3e0'); ctx.fill(); stroke(ctx, 3);
-        for (let i = -2; i <= 2; i++) D.circle(ctx, i * 12, -140 + b, 2, '#8a96a6');
-        window_(ctx, -24, -180 + b, 48, 36, 12);
-        ctx.save(); D.rr(ctx, -24, -180 + b, 48, 36, 12); ctx.clip();
-        peekFace(ctx, who, 0, -158 + b, 19, o.mood);
+        for (let i = -2; i <= 2; i++) D.circle(ctx, i * 12, -134 + b, 2, '#8a96a6');
+        // v2.20: a wider visor so you can see who's inside
+        window_(ctx, -28, -186 + b, 56, 48, 16);
+        ctx.save(); D.rr(ctx, -28, -186 + b, 56, 48, 16); ctx.clip();
+        peekFace(ctx, who, 0, -160 + b, 24, o.mood);
         ctx.restore();
-        D.rr(ctx, -24, -180 + b, 48, 36, 12); stroke(ctx, 3);
+        D.rr(ctx, -28, -186 + b, 56, 48, 16); stroke(ctx, 3);
         // plume
         ctx.beginPath(); ctx.moveTo(-4, -198 + b); ctx.quadraticCurveTo(-10, -236 + b, 26, -232 + b); ctx.quadraticCurveTo(8, -218 + b, 6, -198 + b);
         D.fillVol(ctx, 6, -220 + b, 18, '#ef6b6b', 3);
@@ -1090,11 +1479,11 @@
         for (let i = 0; i < 4; i++) D.box3(ctx, -50 + i * 27, -180 + bb, 19, 24, 8, { fill: '#cbbba5', lw: 3, flute: false });
         ctx.strokeStyle = 'rgba(80,50,30,.22)'; ctx.lineWidth = 2;
         for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) ctx.strokeRect(-46 + c * 31 + (r % 2) * 14, -148 + r * 26 + bb, 28, 24);
-        window_(ctx, -26, -126 + bb, 52, 52, 24);
-        ctx.save(); D.rr(ctx, -26, -126 + bb, 52, 52, 24); ctx.clip();
-        peekFace(ctx, who, 0, -98 + bb, 20, o.mood);
+        window_(ctx, -31, -132 + bb, 62, 62, 28);
+        ctx.save(); D.rr(ctx, -31, -132 + bb, 62, 62, 28); ctx.clip();
+        peekFace(ctx, who, 0, -99 + bb, 25, o.mood);
         ctx.restore();
-        D.rr(ctx, -26, -126 + bb, 52, 52, 24); stroke(ctx, 3);
+        D.rr(ctx, -31, -132 + bb, 62, 62, 28); stroke(ctx, 3);
         D.rr(ctx, -17, -44, 34, 44, 16); ctx.fillStyle = D.lgx(ctx, -17, 17, '#8a5a2e'); ctx.fill(); stroke(ctx, 3);
         D.line(ctx, 0, -180 + bb, 0, -224 + bb, C.ink, 3);
         const fw = Math.sin(t * 4) * 4;
@@ -1109,8 +1498,8 @@
         D.poly(ctx, [0, 72, -62, 0, 0, 0], '#e8729a');
         D.line(ctx, 0, -82, 0, 72, C.ink, 2.5);
         D.line(ctx, -62, 0, 62, 0, C.ink, 2.5);
-        D.ball(ctx, 0, -6, 24, '#fff4dc', { lw: 3 });
-        peekFace(ctx, who, 0, -6, 19, o.mood);
+        D.ball(ctx, 0, -6, 29, '#fff4dc', { lw: 3 });
+        peekFace(ctx, who, 0, -6, 23, o.mood);
         ctx.restore();
         ctx.beginPath(); ctx.moveTo(0, -40 + b * 2);
         for (let i = 0; i < 5; i++) ctx.quadraticCurveTo(-15 + (i % 2) * 30, -30 + i * 8, Math.sin(t * 3 + i) * 10, -20 + i * 8);
@@ -1130,11 +1519,14 @@
         ctx.restore();
         ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(-29, -152); ctx.lineTo(29, -152); ctx.lineTo(42, 0); ctx.closePath(); stroke(ctx, 3);
         D.box3(ctx, -36, -170, 72, 18, 10, { fill: C.cardD, lw: 3, flute: false });
-        D.rr(ctx, -26, -216, 52, 46, 12);
+        D.rr(ctx, -29, -218, 58, 48, 14);
         const lg = ctx.createRadialGradient(0, -193, 4, 0, -193, 36);
         lg.addColorStop(0, '#fffbe0'); lg.addColorStop(1, '#ffd84a');
-        ctx.fillStyle = lg; ctx.fill(); stroke(ctx, 3);
-        peekFace(ctx, who, 0, -193, 18, o.mood);
+        ctx.fillStyle = lg; ctx.fill();
+        ctx.save(); D.rr(ctx, -29, -218, 58, 48, 14); ctx.clip();
+        peekFace(ctx, who, 0, -191, 22, o.mood);
+        ctx.restore();
+        D.rr(ctx, -29, -218, 58, 48, 14); stroke(ctx, 3);
         ctx.beginPath(); ctx.moveTo(-32, -216); ctx.quadraticCurveTo(0, -250, 32, -216); ctx.closePath();
         D.fillVol(ctx, -6, -226, 22, '#ef6b6b', 3);
         const beam = (Math.sin(t * 2) + 1) / 2;
@@ -1150,11 +1542,11 @@
         const bb = b * 0.5;
         D.box3(ctx, -60, -104 + bb, 104, 66, 18, { fill: '#ffc93c', lw: 3, flute: false });
         D.box3(ctx, -44, -156 + bb, 64, 52, 14, { fill: '#ffc93c', lw: 3, flute: false });
-        window_(ctx, -36, -150 + bb, 48, 40, 8);
-        ctx.save(); D.rr(ctx, -36, -150 + bb, 48, 40, 8); ctx.clip();
-        peekFace(ctx, who, -12, -128 + bb, 18, o.mood);
+        window_(ctx, -38, -152 + bb, 54, 46, 10);
+        ctx.save(); D.rr(ctx, -38, -152 + bb, 54, 46, 10); ctx.clip();
+        peekFace(ctx, who, -11, -127 + bb, 22, o.mood);
         ctx.restore();
-        D.rr(ctx, -36, -150 + bb, 48, 40, 8); stroke(ctx, 3);
+        D.rr(ctx, -38, -152 + bb, 54, 46, 10); stroke(ctx, 3);
         D.ball(ctx, -12, -168 + bb, 6, Math.sin(t * 8) > 0 ? '#ff8a3a' : '#ffd25a', { lw: 2 });
         ctx.fillStyle = '#2b2b2b';
         for (let i = 0; i < 5; i++) { ctx.save(); D.rr(ctx, -60, -56 + bb, 104, 12, 2); ctx.clip(); D.line(ctx, -60 + i * 24, -44 + bb, -48 + i * 24, -56 + bb, '#2b2b2b', 8); ctx.restore(); }
@@ -1175,11 +1567,11 @@
           D.line(ctx, xx, yy, xx, -74, C.ink, 2);
         }
         D.box3(ctx, -28, -136 + b, 56, 50, 10, { fill: C.cardL, lw: 3 });
-        window_(ctx, -20, -130 + b, 40, 38, 14);
-        ctx.save(); D.rr(ctx, -20, -130 + b, 40, 38, 14); ctx.clip();
-        peekFace(ctx, who, 0, -110 + b, 17, o.mood);
+        window_(ctx, -23, -132 + b, 46, 44, 16);
+        ctx.save(); D.rr(ctx, -23, -132 + b, 46, 44, 16); ctx.clip();
+        peekFace(ctx, who, 0, -109 + b, 21, o.mood);
         ctx.restore();
-        D.rr(ctx, -20, -130 + b, 40, 38, 14); stroke(ctx, 3);
+        D.rr(ctx, -23, -132 + b, 46, 44, 16); stroke(ctx, 3);
         break;
       }
       case 'snowplow': {
@@ -1187,11 +1579,11 @@
         for (let i = -2; i <= 2; i++) D.ball(ctx, i * 23, -22, 9, '#8a8f99', { lw: 2 });
         const bb = b * 0.5;
         D.box3(ctx, -52, -124 + bb, 94, 84, 18, { fill: '#6fa8dc', lw: 3, flute: false });
-        window_(ctx, -40, -112 + bb, 56, 40, 10);
-        ctx.save(); D.rr(ctx, -40, -112 + bb, 56, 40, 10); ctx.clip();
-        peekFace(ctx, who, -12, -90 + bb, 18, o.mood);
+        window_(ctx, -42, -116 + bb, 60, 48, 12);
+        ctx.save(); D.rr(ctx, -42, -116 + bb, 60, 48, 12); ctx.clip();
+        peekFace(ctx, who, -12, -90 + bb, 22, o.mood);
         ctx.restore();
-        D.rr(ctx, -40, -112 + bb, 56, 40, 10); stroke(ctx, 3);
+        D.rr(ctx, -42, -116 + bb, 60, 48, 12); stroke(ctx, 3);
         D.ball(ctx, -10, -140 + bb, 7, '#ffd25a', { lw: 2 });
         ctx.save(); ctx.translate(58, -42); ctx.rotate(o.swing || 0);
         ctx.beginPath(); ctx.moveTo(0, -62); ctx.quadraticCurveTo(32, -20, 0, 22); ctx.lineTo(16, 22); ctx.quadraticCurveTo(48, -20, 16, -62); ctx.closePath();
@@ -1209,7 +1601,7 @@
         // hood
         ctx.beginPath(); ctx.arc(0, -148 + b, 34, Math.PI * 0.85, Math.PI * 2.15); ctx.closePath();
         D.fillVol(ctx, -8, -156 + b, 34, '#ffd84a', 3);
-        peekFace(ctx, who, 0, -144 + b, 20, o.mood);
+        peekFace(ctx, who, 0, -143 + b, 24, o.mood);
         ctx.save(); ctx.translate(44, -114 + b); ctx.rotate(-0.25 + (o.swing || 0) * 0.6);
         D.line(ctx, 0, 0, 0, -122, C.ink, 6);
         D.line(ctx, 0, 0, 0, -122, '#8a5a2e', 3.5);
@@ -1248,7 +1640,8 @@
   D.enemy = function (ctx, type, x, y, o = {}) {
     const t = CK.time;
     const s = (o.s || 1) * ({ barnacle: 1.5, leafling: 1.6, slush: 1.45, pumpbot: 1.35 }[type] || 1);
-    const mood = o.calm ? 'happy' : o.mood || 'angry';
+    // v2.20: 'ouch' is a wince when a hit lands; the moth and dust bunny faces don't have one, so they stay cross
+    const mood = o.calm ? 'happy' : o.mood === 'ouch' && (type === 'moth' || type === 'dust') ? 'angry' : o.mood || 'angry';
     ctx.save();
     if (o.flash) ctx.filter = 'brightness(2)';
     if (o.stun) ctx.globalAlpha = 0.85;

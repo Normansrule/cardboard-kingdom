@@ -2,6 +2,8 @@
 
 # The story at a glance
 
+<a href="https://normansrule.github.io/cardboard-kingdom/play.html"><img src="media/buttons/play.svg" alt="Play Cardboard Kingdom in your browser" height="64"></a> <a href="https://normansrule.github.io/cardboard-kingdom/versions.html"><img src="media/buttons/versions.svg" alt="Play any earlier version" height="64"></a>
+
 ![Story map](media/story-map.svg)
 
 Sam is a civil-engineering student who has stopped enjoying it. One rainy evening a glowing fridge box in the

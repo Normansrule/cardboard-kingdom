@@ -1,5 +1,7 @@
 # How v2.13 "Home Again" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.13.0"><img src="../../buttons/play.svg" alt="Play version 2.13.0 in your browser" height="64"></a> &nbsp;[Play 2.13.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.13.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image is a capture from the real game while it was being built, in order.
 
 **This round:** the [design direction](../../../DESIGN_DIRECTION.md)'s ending, finally played rather than described: *"When Sam returns home, the model is still imperfect and the degree is still a decision, not magically solved. They repair one corner, answer their friend, and take a manageable next step."* Chapter 13 happens on campus, with a new classmate (Ren), a new interior (the engineering studio), and a small, gentle version of the bridge puzzle.

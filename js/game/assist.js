@@ -13,7 +13,7 @@
   const stroke = (ctx, lw, col) => { ctx.strokeStyle = col || C.ink; ctx.lineWidth = lw || 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke(); };
 
   // ================================================================ SETTINGS
-  const DEFAULTS = { story: false, autoTime: false, text: 1, goal: true, run: false, shake: true, motion: 0 };
+  const DEFAULTS = { story: false, autoTime: false, text: 1, goal: true, run: false, shake: true, motion: 0, paper: 0 };
   const KEY = 'cardboard-kingdom-settings';
   const load = () => {
     try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); }
@@ -29,6 +29,7 @@
   const MOTION = ['Auto', 'On', 'Off'];
 
   const TEXT = ['Normal', 'Fast', 'Instant'];
+  const PAPER = ['Auto', 'Day', 'Night'];
   const OPTIONS = [
     { id: 'story', label: 'Story Mode', desc: 'Enemies hit half as hard, your hits land harder, and the PERFECT window is much wider. For when you just want the story.', val: () => (CK.settings.story ? 'On' : 'Off'), next: () => { CK.settings.story = !CK.settings.story; } },
     { id: 'autoTime', label: 'Auto-timed hits', desc: 'Every attack and block lands at the perfect moment by itself. Great for younger players or one-handed play.', val: () => (CK.settings.autoTime ? 'On' : 'Off'), next: () => { CK.settings.autoTime = !CK.settings.autoTime; } },
@@ -37,13 +38,14 @@
     { id: 'run', label: 'Always run', desc: 'Move faster everywhere. (You can also hold Shift to run.)', val: () => (CK.settings.run ? 'On' : 'Off'), next: () => { CK.settings.run = !CK.settings.run; } },
     { id: 'shake', label: 'Screen shake', desc: 'Turn off if the shaking bothers you.', val: () => (CK.settings.shake ? 'On' : 'Off'), next: () => { CK.settings.shake = !CK.settings.shake; } },
     { id: 'motion', label: 'Reduce motion', desc: 'Calmer menus and pop-ups, no screen shake. Auto follows your computer\'s own setting.', val: () => MOTION[CK.settings.motion || 0] + (CK.settings.motion ? '' : CK.reduceMotion() ? ' (on)' : ' (off)'), on: () => CK.reduceMotion(), next: (d) => { CK.settings.motion = ((CK.settings.motion || 0) + (d || 1) + 3) % 3; } },
+    { id: 'paper', label: 'Menu paper', desc: 'Cream postcards or night-blue ones for menus and dialogue. Auto follows day and night in the game.', val: () => PAPER[CK.settings.paper || 0], on: () => true, next: (d) => { CK.settings.paper = ((CK.settings.paper || 0) + (d || 1) + 3) % 3; } },
     { id: 'sound', label: 'Sound', desc: 'Music and sound effects. (M also toggles.)', val: () => (CK.Audio.muted ? 'Off' : 'On'), next: () => CK.Audio.toggleMute() },
   ];
   CK.SettingsOptions = OPTIONS;
 
   class SettingsScreen {
     constructor() { this.transparent = true; this.sel = 0; this.t = 0; }
-    rect(i) { return [W / 2 - 300, 88 + i * 40, 600, 34]; }
+    rect(i) { return [W / 2 - 300, 78 + i * 33, 600, 30]; }
     update(dt) {
       this.t += dt;
       const n = OPTIONS.length + 1;
@@ -63,27 +65,33 @@
       if (pick >= 0) { OPTIONS[pick].next(dir); CK.saveSettings(); CK.Audio.sfx('select'); }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.6)'; ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 330, 16, 660, H - 32, { fill: '#fffaf0' });
-      D.text(ctx, 'Settings', W / 2, 62, { size: 28, weight: 700, align: 'center', color: C.text });
+      // settings are a form on a postcard: ruled rows, and each value is a little stamp you can flip
+      const P = D.pal();
+      ctx.fillStyle = P.scrim; ctx.fillRect(0, 0, W, H);
+      D.panel(ctx, W / 2 - 330, 16, 660, H - 32, { theme: true, airmail: true });
+      D.text(ctx, 'Settings', W / 2 - 300, 62, { size: 28, weight: 700, color: P.text });
+      D.text(ctx, 'Saved on this computer', W / 2 + 300, 60, { size: D.T.small, weight: 700, align: 'right', color: P.soft });
       OPTIONS.forEach((o, i) => {
         const [x, y, w, h] = this.rect(i), sel = i === this.sel;
-        D.rr(ctx, x, y, w, h, 10); ctx.fillStyle = sel ? C.sheetHi : C.sheet; ctx.fill(); stroke(ctx, sel ? 2.5 : 1.5);
-        D.text(ctx, o.label, x + 18, y + 23, { size: D.T.ui, weight: 700, color: C.text });
+        if (sel) { D.rr(ctx, x - 6, y - 1, w + 12, h + 2, 8); ctx.fillStyle = P.sheetHi; ctx.fill(); }
+        D.line(ctx, x, y + h + 2, x + w, y + h + 2, P.line, 2);
+        D.text(ctx, o.label, x + 14, y + 21, { size: D.T.ui, weight: 800, color: sel ? P.accent : P.text });
         const v = o.val(), on = o.on ? o.on() : v !== 'Off';
-        const pw = 132, px = x + w - pw - 12;
-        D.rr(ctx, px, y + 4, pw, 26, 13); ctx.fillStyle = on ? '#9ad07a' : '#e2d6c2'; ctx.fill(); stroke(ctx, 2);
-        const vc = on ? '#24501c' : '#6a5a4a';
-        D.text(ctx, v, px + pw / 2, y + 22, { size: 15, weight: 700, align: 'center', color: vc });
+        const pw = 140, px = x + w - pw - 8;
+        D.rr(ctx, px, y + 2, pw, 26, 13);
+        ctx.fillStyle = on ? P.accent : P.sheet; ctx.fill();
+        stroke(ctx, 2, on ? P.accentD : P.soft);
+        const vc = on ? P.onAccent : P.soft;
+        D.text(ctx, v, px + pw / 2, y + 20, { size: 15, weight: 800, align: 'center', color: vc });
         // drawn arrows on the selected row say "left/right changes this"
-        if (sel) { D.chevron(ctx, px + 14, y + 17, -1, vc); D.chevron(ctx, px + pw - 14, y + 17, 1, vc); }
+        if (sel) { D.chevron(ctx, px + 14, y + 15, -1, vc); D.chevron(ctx, px + pw - 14, y + 15, 1, vc); }
       });
       const [bx, by] = this.rect(OPTIONS.length);
-      D.button(ctx, bx + 200, by + 6, 200, 38, 'Done', { hover: this.sel === OPTIONS.length, size: 18 });
+      D.button(ctx, bx + 200, by + 8, 200, 38, 'Done', { hover: this.sel === OPTIONS.length, size: 18 });
       const o = OPTIONS[this.sel];
       if (o) {
-        const lines = D.balance(ctx, o.desc, 560, 15, 500);
-        lines.slice(0, 2).forEach((l, i) => D.text(ctx, l, W / 2, H - 62 + i * 20, { size: 15, align: 'center', color: C.textSoft }));
+        const lines = D.balance(ctx, o.desc, 560, 15, 600);
+        lines.slice(0, 2).forEach((l, i) => D.text(ctx, l, W / 2, H - 62 + i * 20, { size: 15, weight: 600, align: 'center', color: P.soft }));
       }
     }
   }

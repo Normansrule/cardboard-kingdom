@@ -470,7 +470,7 @@
       ctx.save(); ctx.translate(722, 190); ctx.scale(Math.max(0.05, k), 1);
       drawPostcard(ctx, card, -190, -116, 380, 232, earned(card) ? this.after : true, { rot: 0.02 });
       ctx.restore();
-      D.panel(ctx, 532, 318, 380, 92, { fill: '#fffaf0', tape: false });
+      D.panel(ctx, 532, 318, 380, 92, { fill: D.C.sheet, tape: false });
       D.text(ctx, earned(card) ? card.title : 'Not rebuilt yet', 722, 342, { size: 17, weight: 700, align: 'center' });
       const cap = earned(card) ? card.caption : 'This postcard fills in when you rebuild somewhere new.';
       D.wrap(ctx, cap, 350, 13, 500).forEach((l, i) => D.text(ctx, l, 722, 362 + i * 17, { size: 13, weight: 500, align: 'center', color: '#5b3a1e' }));

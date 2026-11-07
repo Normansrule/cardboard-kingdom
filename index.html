@@ -4,88 +4,217 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cardboard Kingdom</title>
-<meta name="description" content="A cozy Costume Quest-style adventure about a burnt-out civil engineering student and a kingdom made of cardboard. Plays in your browser, alone or with a friend.">
-<meta name="theme-color" content="#2a1d14">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='9' width='24' height='19' rx='2' fill='%23d9a66b' stroke='%234a2c17' stroke-width='2.5'/%3E%3Cpath d='M4 9l5-5h14l5 5' fill='%23ecc38c' stroke='%234a2c17' stroke-width='2.5' stroke-linejoin='round'/%3E%3Crect x='12' y='13' width='8' height='4' fill='%23f3e6b8'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bark: #2a1d14;      /* the table the box sits on */
-    --bark-lift: #3a281b;
-    --card: #d9a66b;
-    --card-light: #ecc38c;
-    --ink: #4a2c17;
-    --tape: #f3e6b8;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  }
-  html, body { margin: 0; height: 100%; overflow: hidden; }
-  body {
-    /* a warm pool of lamp light under the game, so the frame feels like a desk, not a void */
-    background: radial-gradient(ellipse at 50% 45%, var(--bark-lift), var(--bark) 70%);
-    color: var(--card-light);
-    font-family: "Fredoka", "Trebuchet MS", sans-serif;
-  }
-  ::selection { background: var(--tape); color: var(--ink); }
-  canvas {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    border-radius: 8px; outline: none; touch-action: none;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
-  }
-  canvas:focus-visible { outline: 3px solid var(--tape); outline-offset: 4px; }
-  #boot {
-    position: absolute; inset: 0; display: flex; flex-direction: column; gap: 18px;
-    align-items: center; justify-content: center; font-weight: 600; font-size: 22px;
-  }
-  /* the loading box: its flaps fold shut on the interface curve, then pause, then repeat */
-  .box { position: relative; width: 56px; height: 40px; margin-top: 18px; background: var(--card); border: 3px solid var(--ink); border-radius: 3px; }
-  .box::before, .box::after {
-    content: ""; position: absolute; top: -3px; width: 28px; height: 16px; background: var(--card-light);
-    border: 3px solid var(--ink); border-radius: 2px; animation: flap 1.6s var(--ease-out) infinite;
-  }
-  .box::before { left: -3px; transform-origin: 0 100%; transform: rotate(-150deg); }
-  .box::after { right: -3px; transform-origin: 100% 100%; transform: rotate(150deg); animation-delay: 0.12s; }
-  @keyframes flap { 0%, 15% { transform: rotate(var(--open, -150deg)); } 55%, 100% { transform: rotate(0deg); } }
-  .box::after { --open: 150deg; }
-  @media (prefers-reduced-motion: reduce) { .box::before, .box::after { animation: none; transform: none; } }
-  noscript { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; font-size: 20px; }
-</style>
+<meta name="description" content="A cozy browser game about a burnt-out civil engineering student, a fridge box that turns out to be a door, and a kingdom of cardboard animals whose homes keep washing away.">
+<meta name="theme-color" content="#2c56a3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141d3d" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Cardboard Kingdom">
+<meta property="og:description" content="Wish you were here. Bring a hard hat. A cozy engineering adventure you play in your browser.">
+<meta property="og:image" content="site/img/hero-dialogue.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='7' width='28' height='19' rx='3' fill='%23fbf3e2' stroke='%235b3fa0' stroke-width='2.5'/%3E%3Cpath d='M3 9l13 9 13-9' fill='none' stroke='%235b3fa0' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/BagelFatOne-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Nunito-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/post.css">
+<link rel="stylesheet" href="site/site.css">
+<script>
+  // pick the desk before first paint so night visitors never see a flash of day
+  try { var t = localStorage.getItem('ck-desk'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 </head>
 <body>
-<div id="boot" role="status"><div class="box" aria-hidden="true"></div>Unfolding the cardboard...</div>
-<noscript>Cardboard Kingdom needs JavaScript to run. Turn it on for this page and reload.</noscript>
-<canvas id="game" tabindex="0" aria-label="Cardboard Kingdom. Arrow keys or WASD to move, Z, Space or Enter to talk and confirm, Escape for the menu, M for sound."></canvas>
-<script src="js/engine/core.js"></script>
-<script src="js/engine/audio.js"></script>
-<script src="js/engine/draw.js"></script>
-<script src="js/engine/chars.js"></script>
-<script src="js/game/data.js"></script>
-<script src="js/game/state.js"></script>
-<script src="js/game/script.js"></script>
-<script src="js/game/maps.js"></script>
-<script src="js/game/overworld.js"></script>
-<script src="js/game/battle.js"></script>
-<script src="js/game/puzzles.js"></script>
-<script src="js/game/story.js"></script>
-<script src="js/game/campus.js"></script>
-<script src="js/game/storm.js"></script>
-<script src="js/game/riverbend.js"></script>
-<script src="js/game/lanternmere.js"></script>
-<script src="js/game/gullpoint.js"></script>
-<script src="js/game/friends.js"></script>
-<script src="js/game/assist.js"></script>
-<script src="js/game/longbridge.js"></script>
-<script src="js/game/post.js"></script>
-<script src="js/game/neighbors.js"></script>
-<script src="js/game/patchwork.js"></script>
-<script src="js/game/ferryyard.js"></script>
-<script src="js/game/cozy.js"></script>
-<script src="js/game/costumes.js"></script>
-<script src="js/game/marsh.js"></script>
-<script src="js/game/home.js"></script>
-<script src="js/game/thimble.js"></script>
-<script src="js/game/rivet.js"></script>
-<script src="js/game/menus.js"></script>
-<script src="js/main.js"></script>
+<a class="skip" href="#main">Skip to the postcard</a>
+
+<header class="top">
+  <a class="logo" href="./" aria-label="Cardboard Kingdom, home">
+    <svg viewBox="0 0 40 28" aria-hidden="true"><rect x="1.5" y="1.5" width="37" height="25" rx="3"/><path d="M3 4l17 12L37 4"/></svg>
+    <span>Cardboard Kingdom</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#dam">Try the dam</a>
+    <a href="#places">Places</a>
+    <a href="#get">Download</a>
+    <a href="https://github.com/Normansrule/cardboard-kingdom">Source</a>
+  </nav>
+  <button class="lamp" type="button" id="lamp" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><g class="sun"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></g><path class="moon" d="M15.5 3.5a8.5 8.5 0 1 0 5 15.4A7 7 0 0 1 15.5 3.5z"/></svg>
+    <span class="lamp-label">Night<span class="wide"> desk</span></span>
+  </button>
+</header>
+
+<main id="main">
+  <!-- hero: a postcard from the Kingdom, with a real screenshot tucked behind it -->
+  <section class="hero" aria-labelledby="hero-title">
+    <figure class="photo">
+      <img src="site/img/places/riverbend.jpg" width="960" height="540" alt="In the game: Riverbend on a summer day, with Grandma Rosie's cottage, the brook and Sam on the path." fetchpriority="high">
+      <figcaption>Riverbend, as it looks in the game today.</figcaption>
+    </figure>
+    <article class="postcard airmail hero-card">
+      <div class="msg">
+        <h1 id="hero-title">Wish you were here. <em>Bring a hard hat.</em></h1>
+        <p>The brook took two more houses last night. We hear you used to study dams. There's a fridge box waiting, a bear in cardboard armour, and fourteen chapters of homes to put back.</p>
+        <p class="sig">Love, everyone in Blossom Hollow</p>
+      </div>
+      <div class="addr">
+        <div class="stamp perf" style="--holes: var(--card)">
+          <img src="site/img/places/spring-stamp.jpg" width="320" height="384" alt="">
+          <span class="value">1¢</span>
+        </div>
+        <div class="postmark" aria-hidden="true"><span>Blossom<br>Hollow<br>Spring</span></div>
+        <dl class="lines">
+          <div><dt>To</dt><dd>Anyone who used to love building things</dd></div>
+          <div><dt>Deliver to</dt><dd>Your browser. Nothing to install.</dd></div>
+        </dl>
+        <a class="btn" href="play.html">Play in your browser<small>Free, and it saves as you go</small></a>
+      </div>
+    </article>
+    <a class="peek" href="#places" aria-label="See all the places">
+      <img class="perf" src="site/img/places/spring-stamp.jpg" width="320" height="384" alt="">
+      <img class="perf" src="site/img/places/summer-stamp.jpg" width="320" height="384" alt="">
+      <img class="perf" src="site/img/places/fall-stamp.jpg" width="320" height="384" alt="">
+      <img class="perf" src="site/img/places/winter-stamp.jpg" width="320" height="384" alt="">
+      <img class="perf" src="site/img/places/lanternmere-stamp.jpg" width="320" height="384" alt="">
+      <img class="perf" src="site/img/places/gullpoint-stamp.jpg" width="320" height="384" alt="">
+    </a>
+  </section>
+
+  <!-- the centerpiece: the first job, on the back of a postcard -->
+  <section class="dam-section" id="dam" aria-labelledby="dam-title">
+    <div class="section-head">
+      <h2 id="dam-title">Try the first job</h2>
+      <p>This is Chapter 1's check dam, shrunk to fit on a postcard. The rules are the game's own: build it, press Test, and watch the water.</p>
+    </div>
+
+    <div class="flip" id="flip">
+      <article class="postcard face back airmail" id="dam-card" aria-label="Check dam puzzle">
+        <div class="dam-play">
+          <div class="stage" id="stage">
+            <div class="brook" aria-hidden="true">
+              <div class="flood"><span>flood level</span></div>
+              <div class="water" id="water"></div>
+            </div>
+            <div class="pushes" aria-hidden="true" id="pushes"></div>
+            <div class="dam" id="grid" role="group" aria-label="Construction zone, 3 columns by 4 rows. Arrow keys move, 1 to 3 place cardboard, 0 clears."></div>
+            <div class="checks" aria-hidden="true" id="checks"></div>
+            <div class="downstream" aria-hidden="true">
+              <div class="spill"></div>
+              <svg class="house" viewBox="0 0 80 70"><path d="M8 34 40 8l32 26" fill="var(--violet)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><rect x="16" y="32" width="48" height="34" fill="#d9a66b" stroke="var(--ink)" stroke-width="3"/><rect x="34" y="44" width="12" height="22" fill="#8a5a33"/></svg>
+              <span>Mrs. Thistle's house</span>
+            </div>
+            <div class="bed" aria-hidden="true"></div>
+            <p class="empty" id="empty">Nothing built yet. Pick a cardboard, then tap a square.</p>
+          </div>
+
+          <div class="job">
+            <div class="job-text">
+              <h3>The job</h3>
+              <p>Hold back the brook until it's four blocks deep. Each row has to be at least as strong as the water pushes there. Every block needs something under it.</p>
+            </div>
+
+            <fieldset class="mats">
+              <legend>Cardboard</legend>
+              <label><input type="radio" name="mat" value="1" checked><span class="chip s1">1</span><b>Single-wall</b><small>holds 1, costs 1</small></label>
+              <label><input type="radio" name="mat" value="2"><span class="chip s2">2</span><b>Double-wall</b><small>holds 2, costs 2</small></label>
+              <label><input type="radio" name="mat" value="3"><span class="chip s3">3</span><b>Triple-wall</b><small>holds 3, costs 3</small></label>
+            </fieldset>
+
+            <div class="job-controls">
+            <div class="budget">
+              <span>Scraps</span>
+              <meter id="meter" min="0" max="12" low="10" high="12" optimum="0" value="0"></meter>
+              <output id="spent" for="grid">0 of 12</output>
+            </div>
+
+            <div class="actions">
+              <button class="btn" type="button" id="test">Test it</button>
+              <button class="btn quiet" type="button" id="clear">Clear</button>
+            </div>
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+        <div class="stamped" id="stamped" aria-hidden="true"><span>Tested<br>Held</span></div>
+        <noscript><p class="noscript">The dam needs JavaScript to run, and so does the game. Turn it on and this postcard turns into a puzzle.</p></noscript>
+      </article>
+
+      <article class="postcard face front" id="dam-front" aria-label="The real dam from the game" inert>
+        <img src="site/img/dam-held.jpg" width="960" height="540" alt="In the game: the Blossom Brook check dam holds, and Grandma's lesson appears: water pressure grows with depth." loading="lazy" decoding="async">
+        <div class="front-cap">
+          <p><b>It held.</b> That's the real one above, from Chapter 1: same idea, bigger brook, and a fourth kind of cardboard (laminated).</p>
+          <div class="actions">
+            <a class="btn" href="play.html">Play the whole thing</a>
+            <button class="btn quiet" type="button" id="again">Build another</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- places, as a sheet of stamps -->
+  <section class="places" id="places" aria-labelledby="places-title">
+    <div class="section-head">
+      <h2 id="places-title">Four seasons of places to fix</h2>
+      <p>Every stamp is a real screenshot. Open one to see the whole place.</p>
+    </div>
+    <ul class="sheet" id="sheet">
+      <li><button type="button" data-full="site/img/places/spring.jpg" data-cap="Blossom Hollow, Chapter 1. Cherry blossoms, puddles that bite, and a brook that needs a dam."><img src="site/img/places/spring-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Blossom Hollow</b><small>Ch. 1 · Spring</small></button></li>
+      <li><button type="button" data-full="site/img/places/summer.jpg" data-cap="Sunpatch Shores at night, Chapter 2. A storm on the beach and flood gates to build."><img src="site/img/places/summer-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Sunpatch Shores</b><small>Ch. 2 · Summer night</small></button></li>
+      <li><button type="button" data-full="site/img/places/fall.jpg" data-cap="Amberleaf Woods at night, Chapter 3. Lanterns, falling leaves and a truss bridge."><img src="site/img/places/fall-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Amberleaf Woods</b><small>Ch. 3 · Autumn night</small></button></li>
+      <li><button type="button" data-full="site/img/places/winter.jpg" data-cap="Frostfold Peak, Chapter 4. Snow, cocoa and Grandma's summit dam."><img src="site/img/places/winter-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Frostfold Peak</b><small>Ch. 4 · Winter</small></button></li>
+      <li><button type="button" data-full="site/img/places/riverbend.jpg" data-cap="Riverbend, Chapter 7. Grandma's cottage and an old stone arch."><img src="site/img/places/riverbend-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Riverbend</b><small>Ch. 7 · Summer</small></button></li>
+      <li><button type="button" data-full="site/img/places/lanternmere.jpg" data-cap="Lanternmere at night, Chapter 8. Light the path, not the sky."><img src="site/img/places/lanternmere-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Lanternmere</b><small>Ch. 8 · Autumn night</small></button></li>
+      <li><button type="button" data-full="site/img/places/gullpoint.jpg" data-cap="Gull Point at night, Chapter 9. A leaning lighthouse and a living shoreline."><img src="site/img/places/gullpoint-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>Gull Point</b><small>Ch. 9 · Winter night</small></button></li>
+      <li><button type="button" data-full="site/img/places/longbridge.jpg" data-cap="The Great Gorge, Chapter 10. Kites, a fair and a suspension bridge."><img src="site/img/places/longbridge-stamp.jpg" width="320" height="384" alt="" loading="lazy" decoding="async"><b>The Great Gorge</b><small>Ch. 10 · Spring</small></button></li>
+    </ul>
+  </section>
+
+  <!-- what you get, as the slip inside the parcel -->
+  <section class="box" aria-labelledby="box-title">
+    <div class="slip">
+      <div class="slip-head">
+        <h2 id="box-title">What's in the box</h2>
+        <p>Packing slip · version <span id="ver">2.17</span></p>
+      </div>
+      <table>
+        <thead><tr><th scope="col">Qty</th><th scope="col">Item</th><th scope="col">Notes</th></tr></thead>
+        <tbody>
+          <tr><td>14</td><th scope="row">Chapters, plus a prologue and an epilogue</th><td>A kind story, with twists that are gentler than you'd expect.</td></tr>
+          <tr><td>13</td><th scope="row">Engineering puzzles</th><td>Dams, flood gates, bridges, rain gardens and a ramp. Build, press Test, watch the water.</td></tr>
+          <tr><td>12</td><th scope="row">Homemade costumes</th><td>Each one turns into a giant battle form with its own Special.</td></tr>
+          <tr><td>4</td><th scope="row">Seasons, day and night</th><td>Cherry blossoms, beaches, falling leaves and snow.</td></tr>
+          <tr><td>2</td><th scope="row">Players on one keyboard</th><td>Player 2 is Jules, with real turns in battle.</td></tr>
+          <tr><td>1</td><th scope="row">Story Mode switch</th><td>Plus a goal marker, text speed and a Reduce motion setting that follows your computer.</td></tr>
+          <tr><td>0</td><th scope="row">Libraries</th><td>Plain JavaScript on a canvas, with every sprite drawn in code. The whole game fits in one 1.2 MB (megabyte) file.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ways to get it, as address labels -->
+  <section class="get" id="get" aria-labelledby="get-title">
+    <div class="section-head">
+      <h2 id="get-title">Where should we send it?</h2>
+    </div>
+    <ul class="labels">
+      <li class="primary"><a class="label" href="play.html"><b>This browser</b><span>Plays right here and saves as you go.</span></a></li>
+      <li><a class="label" href="https://github.com/Normansrule/cardboard-kingdom/releases/latest"><b>Your computer</b><span>A zip for Windows, macOS or Linux. Unzip it and double-click the launcher.</span></a></li>
+      <li><a class="label" href="cardboard-kingdom-single-file.html" download><b>One single file</b><span>The whole game in one HTML (HyperText Markup Language) file. Open it anywhere, even offline.</span></a></li>
+      <li><a class="label" href="https://github.com/Normansrule/cardboard-kingdom"><b>Your code editor</b><span>The source on GitHub. No build step, so open it and start poking.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="sent" aria-hidden="true"><span>Posted<br>Blossom Hollow<br>v2.17</span></div>
+  <p>Made with cardboard, tape and plain JavaScript. Fonts are Bagel Fat One and Nunito, both under the SIL Open Font License.</p>
+  <p><a href="versions.html">Play any version</a> · <a href="https://github.com/Normansrule/cardboard-kingdom/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/Normansrule/cardboard-kingdom/blob/main/docs/STORY.md">The story (spoilers)</a> · <a href="https://github.com/Normansrule/cardboard-kingdom/blob/main/DESIGN.md">How it's designed</a></p>
+</footer>
+
+<dialog class="viewer" id="viewer" aria-labelledby="viewer-cap">
+  <figure>
+    <figcaption id="viewer-cap"></figcaption>
+  </figure>
+  <form method="dialog"><button class="btn quiet" type="submit">Close</button></form>
+</dialog>
+
+<script src="site/site.js" defer></script>
 </body>
 </html>

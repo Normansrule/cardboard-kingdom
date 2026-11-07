@@ -167,13 +167,13 @@
       if (this.state === 'bite') D.text(ctx, '!', cx + 40, cy - 40, { size: 64, weight: 700, align: 'center', color: '#ef6b6b', outline: '#fff', ow: 6 });
       this.parts.draw(ctx);
       // prompts and results
-      const panel = (title, sub, col) => { D.panel(ctx, cx - 260, 30, 520, 76, { fill: '#fffaf0', tape: false }); D.text(ctx, title, cx, 62, { size: 22, weight: 700, align: 'center', color: col || '#3d2412' }); D.text(ctx, sub, cx, 88, { size: 14, weight: 600, align: 'center', color: '#7a5434' }); };
+      const panel = (title, sub, col) => { D.panel(ctx, cx - 260, 30, 520, 76, { fill: D.C.sheet, tape: false }); D.text(ctx, title, cx, 62, { size: 22, weight: 700, align: 'center', color: col || '#3d2412' }); D.text(ctx, sub, cx, 88, { size: 14, weight: 600, align: 'center', color: '#7a5434' }); };
       if (this.state === 'cast' || this.state === 'wait') panel('Wait for it...', 'Little nibbles don\'t count. Press Z when the bobber goes all the way under.');
       if (this.state === 'bite') panel('NOW!', 'Press Z!', '#ef6b6b');
       if (this.state === 'miss') panel('Oh no!', this.msg);
       if (this.state === 'caught') {
         const F = FISH[this.fish];
-        D.panel(ctx, cx - 280, 80, 560, 330, { fill: '#fffaf0' });
+        D.panel(ctx, cx - 280, 80, 560, 330, { fill: D.C.sheet });
         if (this.isNew) { D.tape(ctx, cx + 150, 74, 110, 30, 0.1, 0.95); D.text(ctx, 'NEW!', cx + 205, 96, { size: 18, weight: 700, align: 'center', color: '#c2410c' }); }
         drawFish(ctx, this.fish, cx, 200, Math.min(220, 70 + this.size * 2), { t: this.t });
         D.text(ctx, `You caught a ${F.name}!`, cx, 300, { size: 24, weight: 700, align: 'center' });
@@ -543,7 +543,7 @@
       D.text(ctx, `Bends: ${this.bends()}`, 825, 120, { size: 20, weight: 700, align: 'center', color: this.bends() >= 4 ? '#2f6a3a' : '#c2410c' });
       D.wrap(ctx, 'Straightened rivers push floods downstream faster. Bends, deep pools and reed beds slow the water down and give fish somewhere to rest.', 200, 13, 500).forEach((l, i) => D.text(ctx, l, 736, 160 + i * 18, { size: 13, weight: 500, color: '#2f5a2a' }));
       D.portrait(ctx, 'fen', 60, 120, this.solved ? 'happy' : 'sad');
-      if (this.msg) { D.panel(ctx, 40, 450, 640, 74, { fill: this.solved ? '#e8f8e0' : '#fffaf0', tape: false }); D.wrap(ctx, this.msg, 600, 14, 600).forEach((l, i) => D.text(ctx, l, 360, 476 + i * 19, { size: 14, weight: 600, align: 'center', color: this.solved ? '#2f6a3a' : '#3d2412' })); }
+      if (this.msg) { D.panel(ctx, 40, 450, 640, 74, { fill: this.solved ? '#e8f8e0' : D.C.sheet, tape: false }); D.wrap(ctx, this.msg, 600, 14, 600).forEach((l, i) => D.text(ctx, l, 360, 476 + i * 19, { size: 14, weight: 600, align: 'center', color: this.solved ? '#2f6a3a' : '#3d2412' })); }
       D.text(ctx, 'Up/Down: pick a row · Left/Right: move the brook · Z or T: test', 360, 440, { size: 12, weight: 600, align: 'center', color: '#2f5a2a' });
     }
   }

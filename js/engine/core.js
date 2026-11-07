@@ -5,7 +5,9 @@
   const CK = (window.CK = window.CK || {});
   const W = (CK.W = 960);
   const H = (CK.H = 540);
-  CK.FONT = '"Fredoka", "Trebuchet MS", "Comic Sans MS", sans-serif';
+  // Kingdom Post type: Nunito for reading, Bagel Fat One for headings and stamps (see css/post.css)
+  CK.FONT = '"Nunito", "Segoe UI", "Trebuchet MS", sans-serif';
+  CK.DISPLAY = '"Bagel Fat One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif';
 
   // ---------------------------------------------------------------- utils
   const U = (CK.U = {
@@ -313,9 +315,11 @@
     const hh = (H / 2) * Trans.p;
     CK.D.cardboard(ctx, -10, hh - H / 2 - 10, W + 20, H / 2 + 10, { r: 0, seed: 7, lw: 5 });
     CK.D.cardboard(ctx, -10, H - hh, W + 20, H / 2 + 10, { r: 0, seed: 9, lw: 5 });
-    if (Trans.p > 0.85) {
-      CK.D.tape(ctx, W / 2 - 220, H / 2 - 18, 440, 36, 0, 0.9);
-      if (Trans.label) CK.D.text(ctx, Trans.label, W / 2, H / 2 + 8, { size: 22, align: 'center', color: '#5b3a1e' });
+    // the label arrives as a little airmail card where the flaps meet
+    if (Trans.p > 0.85 && Trans.label) {
+      const D = CK.D, lw = Math.max(260, D.measure(ctx, Trans.label, 22, 700) + 64);
+      D.panel(ctx, W / 2 - lw / 2, H / 2 - 30, lw, 60, { airmail: true, r: 6 });
+      D.text(ctx, Trans.label, W / 2, H / 2 + 8, { size: 22, weight: 700, align: 'center', color: D.C.text, display: false });
     }
   }
 
@@ -349,6 +353,8 @@
   const toasts = [];
   CK.toast = function (text, color) {
     toasts.push({ text, color: color || '#fffaf0', t: 0 });
+    // good news makes Sam throw their arms up for a moment on the map (v2.19)
+    if (/^\+|!/.test(text) && !/^(Need|You already|Could not|No )/.test(text)) CK.cheerAt = CK.time;
     if (toasts.length > 4) toasts.shift();
   };
   CK.clearToasts = () => (toasts.length = 0); // for automated screenshots
@@ -367,10 +373,12 @@
       const a = Math.min(1, t.t * 5, (3 - t.t) * 4);
       const slide = CK.D.calm() ? 0 : (1 - CK.Ease.ui(Math.min(1, t.t * 4))) * -12;
       ctx.globalAlpha = Math.max(0, a);
-      ctx.font = `600 18px ${CK.FONT}`;
-      const w = ctx.measureText(t.text).width + 40;
-      CK.D.panel(ctx, W / 2 - w / 2, y + slide, w, 36, { seed: 3, inner: false });
-      CK.D.text(ctx, t.text, W / 2, y + slide + 24, { size: 18, align: 'center', color: CK.D.C.text });
+      // a small note with a violet postmark dot: something arrived
+      const D = CK.D, P = D.pal();
+      const w = D.measure(ctx, t.text, 18, 700) + 64;
+      D.panel(ctx, W / 2 - w / 2, y + slide, w, 38, { theme: true, r: 19 });
+      D.circle(ctx, W / 2 - w / 2 + 22, y + slide + 19, 7, null, P.accent, 2.5);
+      D.text(ctx, t.text, W / 2 + 12, y + slide + 25, { size: 18, weight: 700, align: 'center', color: P.text });
       ctx.globalAlpha = 1;
       y += 44;
     }
@@ -401,6 +409,7 @@
   // ---------------------------------------------------------------- boot
   let canvas, ctx, scale = 1;
   CK.boot = function (firstScene) {
+    CK.booted = true;
     canvas = document.getElementById('game');
     ctx = canvas.getContext('2d');
     CK.canvas = canvas;

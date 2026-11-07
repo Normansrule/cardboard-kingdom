@@ -805,7 +805,7 @@
       });
       this.parts.draw(ctx);
       // side panel
-      D.panel(ctx, 740, 110, 200, 226, { fill: '#fff4dc', tape: false });
+      D.panel(ctx, 740, 110, 200, 226, { fill: D.C.sheet, tape: false });
       D.wrap(ctx, R.teach, 176, 13, 600).forEach((l, i) => D.text(ctx, l, 752, 136 + i * 17, { size: 13, weight: 600, color: '#3d2412' }));
       const good = this.state === 'good';
       D.text(ctx, `In: ${R.flow}  ·  Room for: ${this.cap}`, 840, 300, { size: 14, weight: 700, align: 'center', color: good ? '#2f6a3a' : '#c2410c' });
@@ -814,7 +814,7 @@
       D.button(ctx, 760, 450, 160, 40, 'Leave', { size: 14 });
       D.portrait(ctx, 'whistle', 20, 410, good || this.done ? 'happy' : 'sad');
       const msg = this.done ? (this.room < 2 ? 'Room fixed! Old Whistle hums a happy note. (Z / click: next room)' : 'All three rooms fixed! The Teapot settles. (Z / click: go outside)') : this.showHint ? 'Tuppence\'s notes: ' + R.hint : this.msg;
-      D.panel(ctx, 140, 420, 580, 100, { fill: this.done || good ? '#e8f8e0' : this.state === 'crack' || this.state === 'over' ? '#ffe9e0' : '#fffaf0', tape: false });
+      D.panel(ctx, 140, 420, 580, 100, { fill: this.done || good ? '#e8f8e0' : this.state === 'crack' || this.state === 'over' ? '#ffe9e0' : D.C.sheet, tape: false });
       D.wrap(ctx, msg, 540, 15, 600).forEach((l, i) => D.text(ctx, l, 430, 452 + i * 20, { size: 15, weight: 600, align: 'center', color: '#3d2412' }));
       D.text(ctx, 'Click a valve, or Left/Right + Z · R: shut all · H: notes', 430, 532, { size: 11, weight: 600, align: 'center', color: '#7a5434' });
     }

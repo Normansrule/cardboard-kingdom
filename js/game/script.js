@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const CK = window.CK;
-  const D = CK.D;
+  const D = CK.D, U = CK.U;
   const Input = CK.Input;
   const W = CK.W, H = CK.H;
 
@@ -23,11 +23,14 @@
     }
     close() {
       this.finished = true;
+      CK.talkingWho = null;
       CK.Scenes.remove(this);
     }
     update(dt) {
       this.t += dt;
       const len = this.text.length;
+      // whoever is mid-sentence moves their mouth (portraits read this)
+      CK.talkingWho = this.shown < len ? this.who : null;
       if (this.shown < len) {
         const before = Math.floor(this.shown);
         this.shown = Math.min(len, this.shown + dt * 55 * (CK.textSpeed ? CK.textSpeed() : 1));
@@ -50,16 +53,21 @@
       ctx.save();
       if (!D.calm()) ctx.translate(0, (1 - pop) * 16);
       ctx.globalAlpha = Math.min(1, k * 1.6);
-      D.panel(ctx, x, y, w, h, { fill: D.C.sheet, seed: 11 });
-      let tx = x + 28;
+      // a postcard with an airmail edge; whoever is talking is the stamp in the corner
+      const P = D.pal();
+      D.panel(ctx, x, y, w, h, { theme: true, airmail: true });
+      let tx = x + 30;
       if (hasP) {
-        D.portrait(ctx, this.who, x + 18, y + 20, this.mood);
-        tx = x + 148;
+        D.portraitStamp(ctx, this.who, x + 18, y + 13, this.mood, P.sheet);
+        tx = x + 160;
       }
       if (sp.name) {
-        const nw = D.measure(ctx, sp.name, 20, 700) + 40;
-        D.tape(ctx, tx - 8, y - 16, nw, 30, -0.03, 0.95);
-        D.text(ctx, sp.name, tx + nw / 2 - 8, y + 6, { size: 20, weight: 700, align: 'center', color: D.C.text });
+        // the name rides on a violet tab clipped to the top edge, like a sorting label
+        const nw = D.measure(ctx, sp.name, 18, 400, { display: true }) + 28;
+        D.rr(ctx, tx - 6, y - 15, nw, 30, 8);
+        ctx.fillStyle = P.accent; ctx.fill();
+        ctx.strokeStyle = P.accentD; ctx.lineWidth = 2; ctx.stroke();
+        D.text(ctx, sp.name, tx - 6 + nw / 2, y + 7, { size: 18, align: 'center', color: P.onAccent, display: true });
       }
       const lines = D.wrap(ctx, this.text.slice(0, Math.floor(this.shown)), w - (tx - x) - 30, 22, 500);
       // wrap the full text once for stable layout
@@ -68,7 +76,7 @@
       let ly = y + 46;
       for (const L of full) {
         const part = L.slice(0, Math.max(0, n));
-        D.text(ctx, part, tx, ly, { size: 22, weight: 500, color: this.opts.italic ? D.C.textSoft : D.C.text });
+        D.text(ctx, part, tx, ly, { size: 22, weight: this.opts.italic ? 500 : 600, color: this.opts.italic ? P.soft : P.text });
         n -= L.length + 1;
         ly += 30;
         if (n <= 0) break;
@@ -76,7 +84,7 @@
       void lines;
       if (this.shown >= this.text.length) {
         const b = D.calm() ? 0 : Math.sin(this.t * 5) * 2;
-        D.poly(ctx, [x + w - 40, y + h - 30 + b, x + w - 24, y + h - 30 + b, x + w - 32, y + h - 20 + b], D.C.textSoft);
+        D.poly(ctx, [x + w - 42, y + h - 32 + b, x + w - 24, y + h - 32 + b, x + w - 33, y + h - 21 + b], P.accent);
       }
       ctx.restore();
     }
@@ -137,15 +145,18 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.3)';
+      const P = D.pal();
+      ctx.fillStyle = P.scrim;
+      ctx.globalAlpha = 0.55;
       ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
       // the question is the heading; the answers stack directly above it, so they read as one card
       const hasP = !!this.who;
       const ph = hasP ? 150 : 96, py = H - 18 - ph;
-      D.panel(ctx, 30, py, W - 60, ph, { fill: D.C.sheet });
-      if (hasP) D.portrait(ctx, this.who, 48, py + 20);
-      const lines = D.balance(ctx, this.prompt, W - (hasP ? 240 : 120), 24, 600);
-      lines.slice(0, 3).forEach((l, i) => D.text(ctx, l, hasP ? 178 : 58, py + (hasP ? 50 : 56 - (lines.length > 1 ? 14 : 0)) + i * 30, { size: 24, weight: 600, color: D.C.text }));
+      D.panel(ctx, 30, py, W - 60, ph, { theme: true, airmail: true });
+      if (hasP) D.portraitStamp(ctx, this.who, 48, py + 13, null, P.sheet);
+      const lines = D.balance(ctx, this.prompt, W - (hasP ? 250 : 120), 24, 700);
+      lines.slice(0, 3).forEach((l, i) => D.text(ctx, l, hasP ? 190 : 58, py + (hasP ? 54 : 56 - (lines.length > 1 ? 14 : 0)) + i * 30, { size: 24, weight: 700, color: P.text, display: false }));
       this.rects().forEach((r, i) => D.button(ctx, ...r, this.options[i], { hover: i === this.sel, size: 20 }));
     }
   }
@@ -178,28 +189,32 @@
       if (this.t > 0.5 && (Input.hit('ok') || Input.mouse.pressed)) this.close();
     }
     draw(ctx) {
-      ctx.fillStyle = `rgba(30,15,5,${Math.min(0.45, this.t)})`;
+      const P = D.pal();
+      ctx.fillStyle = P.scrim;
+      ctx.globalAlpha = Math.min(1, this.t * 2.5);
       ctx.fillRect(0, 0, W, H);
-      // a rare, earned moment: it may glow, but it grows from 92% (never from nothing) and doesn't overshoot
+      ctx.globalAlpha = 1;
+      // a rare, earned moment: the prize arrives as a new stamp, and the postmark lands on it.
+      // The card grows from 92% (never from nothing); the postmark presses in a beat later.
       const k = CK.Ease.ui(Math.min(1, this.t * 3)), calm = D.calm();
       const s = calm ? 1 : 0.92 + 0.08 * k;
+      const pk = U.clamp((this.t - 0.35) * 5, 0, 1), press = calm ? 1 : 1 + 0.12 * (1 - CK.Ease.ui(pk));
       ctx.save();
-      ctx.translate(W / 2, H / 2 - 20);
+      ctx.translate(W / 2, H / 2 - 10);
       ctx.globalAlpha = Math.min(1, this.t * 4);
       ctx.scale(s, s);
-      for (let i = 0; i < 12; i++) {
-        ctx.save();
-        ctx.rotate((calm ? 0 : this.t * 0.25) + (i * Math.PI) / 6);
-        ctx.globalAlpha *= 0.22;
-        D.poly(ctx, [0, 0, -20, -260, 20, -260], '#fff3a0');
+      D.panel(ctx, -250, -150, 500, 300, { theme: true, airmail: true });
+      D.stamp(ctx, -110, -128, 160, 176, { holes: P.sheet, fill: '#dff0ff', art: (c, ix, iy, iw, ih) => {
+        if (this.icon && CK.Data.costumes[this.icon]) D.giant(c, this.icon, ix + iw / 2, iy + ih - 4, { s: 0.42, who: 'sam', mood: 'happy' });
+        else if (this.icon) D.icon(c, this.icon, ix + iw / 2, iy + ih / 2, 3);
+      } });
+      if (pk > 0) {
+        ctx.save(); ctx.translate(78, -70); ctx.scale(press, press);
+        D.postmark(ctx, 0, 0, 46, ['KINGDOM', 'POST'], { alpha: 0.88 * Math.min(1, pk * 1.5), color: P.accent, waves: false });
         ctx.restore();
       }
-      D.panel(ctx, -230, -120, 460, 240, { fill: D.C.sheet });
-      if (this.icon && CK.Data.costumes[this.icon]) {
-        D.giant(ctx, this.icon, 0, 30, { s: 0.55, who: 'sam', mood: 'happy' });
-      } else if (this.icon) D.icon(ctx, this.icon, 0, -20, 3);
-      D.text(ctx, this.title, 0, 70, { size: 28, weight: 700, align: 'center', color: D.C.text });
-      D.text(ctx, this.sub || '', 0, 100, { size: 17, weight: 500, align: 'center', color: D.C.textSoft });
+      D.text(ctx, this.title, 0, 92, { size: 28, weight: 700, align: 'center', color: P.text });
+      D.balance(ctx, this.sub || '', 420, 17, 600).slice(0, 2).forEach((l, i) => D.text(ctx, l, 0, 120 + i * 22, { size: 17, weight: 600, align: 'center', color: P.soft }));
       ctx.restore();
     }
   }
@@ -229,11 +244,12 @@
     draw(ctx) {
       const a = Math.min(1, this.t * 3, (this.dur - this.t) * 3);
       ctx.globalAlpha = Math.max(0, a);
-      ctx.fillStyle = 'rgba(30,15,5,0.55)';
+      const P = D.pal();
+      ctx.fillStyle = P.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 300, H / 2 - 80, 600, 160, { fill: D.C.sheet });
-      D.text(ctx, this.title, W / 2, H / 2 - 2, { size: 40, weight: 700, align: 'center', color: D.C.text });
-      D.text(ctx, this.sub || '', W / 2, H / 2 + 36, { size: 20, weight: 500, align: 'center', color: D.C.textSoft });
+      D.panel(ctx, W / 2 - 300, H / 2 - 86, 600, 172, { theme: true, airmail: true });
+      D.text(ctx, this.title, W / 2, H / 2 - 2, { size: 42, weight: 700, align: 'center', color: P.text });
+      D.text(ctx, this.sub || '', W / 2, H / 2 + 38, { size: 20, weight: 700, align: 'center', color: P.accent });
       ctx.globalAlpha = 1;
     }
   }

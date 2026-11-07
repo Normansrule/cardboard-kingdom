@@ -2,7 +2,7 @@
 # Cardboard Kingdom launcher for Linux (and macOS).
 # Opens the game in your web browser. No install, no internet needed.
 cd "$(dirname "$0")"
-GAME="$PWD/index.html"
+GAME="$PWD/play.html"
 if command -v xdg-open >/dev/null 2>&1; then
   xdg-open "$GAME" >/dev/null 2>&1 &
 elif command -v open >/dev/null 2>&1; then

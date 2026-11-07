@@ -8,7 +8,7 @@
   Data.speakers = {
     sam: { name: 'Sam', look: 'sam', ps: 2.4, py: 20, bg: '#dfe9ff' },
     corry: { name: 'Sir Corrugate', look: 'corry', ps: 1.9, py: 22, bg: '#ffe6cc' },
-    pip: { name: 'Pip', look: 'pip', ps: 2.3, py: 0, bg: '#ffe3ef' },
+    pip: { name: 'Pip', look: 'pip', ps: 2.2, px: -38, py: 14, bg: '#ffe3ef' },
     mayor: { name: 'Mayor Mossworth', look: 'mayor', ps: 2.4, py: -18, bg: '#e3f6d6' },
     bess: { name: 'Captain Bess', look: 'bess', ps: 1.5, py: 16, bg: '#d9efff' },
     skipper: { name: 'Skipper', look: 'skipper', ps: 2.4, py: 8, bg: '#eaffd6' },

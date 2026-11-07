@@ -1,5 +1,7 @@
 # 🧸 Cardboard Kingdom: Character Bible
 
+<a href="https://normansrule.github.io/cardboard-kingdom/play.html"><img src="media/buttons/play.svg" alt="Play Cardboard Kingdom in your browser" height="64"></a> <a href="https://normansrule.github.io/cardboard-kingdom/versions.html"><img src="media/buttons/versions.svg" alt="Play any earlier version" height="64"></a>
+
 Who everyone is, what they want, what they're scared of, and how they talk.
 In the game, the **Friends** page in the pause menu shows the same profiles, and **Campfire Talks** reveal the rest.
 
@@ -318,6 +320,59 @@ A paper catfish the size of a rowboat, with long feelers. It used to live in the
 | **Grandma** | Gin Rummy (Riverbend) | The First Bridge | Who Hung the Moon (after Lanternmere) | Ike (after Gull Point) |
 
 Jules talks open up in co-op, or once Jules comes through the box in Chapter 8. Grandma's are at her campfire in Riverbend.
+
+## The neighbors (v2.24)
+
+Nine named villagers became friends you can get to know, the way you do in Stardew Valley and Animal Crossing. Talk to them once each visit to their place and bring them presents from your patch things. At one, three and five hearts each of them tells you something real, and at five hearts they give you a keepsake hat. Pause → Neighbors shows their wants, fears, quirks, what they love (once you've found out) and their stories so far. The code is `js/game/friendships.js`.
+
+Each one follows the writing rules below. Their worries are small and ordinary on purpose: a dad on night shift, a sister who moved fifteen minutes away, a castle the big kids knocked over, being too slow, being a bother, only being good at pretty things. Every five-heart story ends with someone being a little braver than before, and at least one of those stories ties back to Grandma Rosie.
+
+| Neighbor | Place | Wants | Scared of | Heart stories (1, 3, 5) | Keepsake |
+|---|---|---|---|---|---|
+| **Clover** (bunny) | Blossom Hollow | To be brave enough to go down to the docks at night, and give the little crying monster her flower crown. | The dark. Mostly the bit of the dark right behind her. | The Brave List · The Dark Part · The Docks at Night | Paper Boat Hat |
+| **Robin Redbox** (robin) | Blossom Hollow | To deliver a letter to the Queen herself, in person, just once. | Being forgettable. Everybody remembers the post. Nobody remembers the post-bird. | Every Seal Is Someone · Eleven Thousand Letters · Post for Robin | Postie's Cap |
+| **Mayor Mossworth** (tortoise) | Blossom Hollow | To be a mayor his village can rely on again, after he believed the Society's letter. | That he's become too slow for the job. Tortoises are slow. He always knew that. He just never minded before. | A Speech for a Flower Pot · Too Slow · The First Map | Mossworth's Top Hat |
+| **Dabble** (duck) | Sunpatch Shores | To open her juice stand on the boardwalk. The sign has been painted for three summers. | Things changing while she isn't looking. Her big sister moved away last spring. | Nine Waves · Fifteen Minutes Away · Dabble & Waddle's | Juice Stand Visor |
+| **Nib** (mouse) | Sunpatch Shores | To be an engineer like you. Specifically like you. He has said so several times. | That his ideas are silly. The big kids knocked his castle over and laughed. | Invention Forty-Two · That's Data · High Tide | Junior Engineer Hat |
+| **Ember** (fox) | Amberleaf Woods | To make the Lantern Walk costumes the most beautiful the Woods have ever seen. | That pretty things don't matter. That she was no use at all in the flood. | Everything Is Better With a Cape · Only Pretty Things · The Lantern Walk | Ember's Beret |
+| **Bristle** (hedgehog) | Amberleaf Woods | For every drain in Amberleaf Woods to run clear. And, secretly, to jump in a leaf pile again. | Being a bother. He would rake a whole forest before he asked for help with one corner. | A Cozy Pile · Not a Bother · The Leaf Pile | Prickle Hood |
+| **Professor Hoot** (owl) | Amberleaf Woods | For somebody, anybody, to read his books. | That knowledge just gets forgotten, like a book left out in the rain. | Culverts: A Love Story · Feet Wet · Even Better Than the Diagram | Hoot's Reading Glasses |
+| **Mama Burrow** (bear) | Frostfold Peak | To answer her cub Bramble's questions honestly, even the hard ones. | That she taught her cub to be afraid of the Brinemarsh folk, without ever meaning to. | Scarf Number Thirty-One · My Mother's Story · Supper at the Burrow | Burrow Earmuffs |
+
+
+Their looks change with their stories. Clover carries her own pink lantern once she's been to the docks, and everyone at three hearts or more sends you a heart bubble when you walk up. Each neighbor also carries something you can spot from across the map: Robin's mail bag, Bristle's rake, Ember's sketchbook, Professor Hoot's reading glasses, Mama Burrow's knitting, Dabble's juice jug and Nib's pencil and tape measure.
+
+## Who knows whom (v2.25)
+
+The neighbors are friends with each other too, and the Neighborhood Picnic is where you see it. Every picnic line is two neighbors talking, never just to Sam.
+
+| Pair | What's between them |
+|---|---|
+| Professor Hoot and Bristle | Bristle is Hoot's first reader. He says sorry to every page. Hoot calls him "my best student". |
+| Nib and Mayor Mossworth | Nib measures everything, including the Mayor's hat (thirty-two mouse-lengths, measured twice). |
+| Nib and Professor Hoot | Nib wants to borrow Volume Seven. Hoot nearly cries into the sandwiches. |
+| Clover and Robin | Robin brings Clover the letters with the best seals. |
+| Clover and Ember | Ember thinks Clover's flower crown is "iconic". Clover doesn't know what that means but is it. |
+| Clover and Mama Burrow | Mama Burrow feeds Puddle, Clover's little monster friend, at the edge of the blanket. |
+| Ember and Bristle | Ember made Bristle a cape. It catches on his prickles. He wears it anyway. |
+| Dabble and Mama Burrow | They trade stew for juice. Bramble drinks too much juice. |
+| Dabble and Robin | Robin carries Dabble's postcards to her sister, fifteen minutes up the beach, eleven a month. |
+
+## Favours (v2.25)
+
+After their first heart story, each neighbor asks for one small thing, and it sends you into another part of the game. Nothing expires.
+
+| Neighbor | Favour | Uses |
+|---|---|---|
+| Clover | Find one of Grandma Rosie's paper cranes and tell her the wish | Paper cranes |
+| Robin | Check that two signposts point the right way | Signposts |
+| Mayor Mossworth | Sit for a moment at a quiet landmark | Landmarks |
+| Dabble | Try a warm drink at a stand, for "research" | Stands |
+| Nib | Dig up a buried treasure and measure the hole | Treasure |
+| Ember | Shake three trees for colour ideas | Fruit trees |
+| Bristle | Make a cozy corner in your patch | Your patch |
+| Professor Hoot | Sketch two critters for Volume Twelve | Field Guide |
+| Mama Burrow | Give Biscuit the cat a scratch from her | Biscuit |
 
 ## Writing rules for this cast
 

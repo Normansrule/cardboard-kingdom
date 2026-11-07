@@ -526,7 +526,7 @@
       ctx.translate(W / 2, H / 2 - 20);
       ctx.scale(s, s);
       for (let i = 0; i < 12; i++) { ctx.save(); ctx.rotate(this.t * 0.5 + (i * Math.PI) / 6); ctx.globalAlpha = 0.25; D.poly(ctx, [0, 0, -20, -260, 20, -260], '#fff3a0'); ctx.restore(); }
-      D.panel(ctx, -250, -130, 500, 262, { fill: '#fff4dc' });
+      D.panel(ctx, -250, -130, 500, 262, { fill: D.C.sheet });
       // the stamp comes down like a rubber stamp: THUNK
       const drop = Math.max(0, 1 - this.t * 3);
       CK.drawStamp(ctx, this.id, 0, -40 - drop * 60, 96, { rot: -0.08 + drop * 0.3 });
@@ -731,7 +731,7 @@
     const pellNews = isPell && (!pellMet() || (doneCount() === LETTERS.length && !f('pell_done')) || (f('gp_done') && !f('pell_postcard')));
     if (!mail && !pellNews) return;
     const s = (e.o && e.o.s) || 1;
-    const x = e.px - this.camX, y = e.py - this.camY - (isPell ? 92 : HEAD[e.look] || 88) * Math.max(0.75, s) + Math.sin(this.t * 4) * 4;
+    const x = e.px + (e.paceOff || 0) - this.camX, y = e.py - this.camY - (isPell ? 92 : HEAD[e.look] || 88) * Math.max(0.75, s) + Math.sin(this.t * 4) * 4;
     if (pellNews && !pellMet()) { CK.drawEmote(ctx, '!', x, y, this.t); return; }
     ctx.save();
     ctx.beginPath(); ctx.ellipse(x, y, 19, 16, 0, 0, TAU); ctx.fillStyle = '#fffaf0'; ctx.fill(); stroke(ctx, 2);
@@ -802,14 +802,14 @@
     }
     draw(ctx) {
       const G = CK.G, B = book();
-      ctx.fillStyle = 'rgba(30,15,5,0.6)'; ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, 40, 20, W - 80, H - 40, { fill: '#fffaf0' });
+      ctx.fillStyle = D.C.scrim; ctx.fillRect(0, 0, W, H);
+      D.panel(ctx, 40, 20, W - 80, H - 40, { fill: D.C.sheet });
       D.text(ctx, 'Stamp Book', W / 2, 60, { size: 28, weight: 700, align: 'center' });
       D.text(ctx, 'Each friend wears one Battle Stamp. Press it on, and their cardboard fights a little differently.', W / 2, 84, { size: 13, weight: 600, align: 'center', color: '#7a5434' });
       const cards = this.cards();
       cards.forEach((id, i) => {
         const [x, y, w, h] = this.crect(i), on = i === this.sel;
-        D.rr(ctx, x, y, w, h, 12); ctx.fillStyle = on ? (this.mode === 'stamp' ? '#ffe9a0' : '#fff0b8') : '#fff4dc'; ctx.fill(); stroke(ctx, on ? 3 : 1.6);
+        D.rr(ctx, x, y, w, h, 12); ctx.fillStyle = on ? D.C.sheetHi : D.C.sheet; ctx.fill(); stroke(ctx, on ? 3 : 1.6);
         if (id === LETTER_ROW) {
           const n = doneCount();
           ctx.save(); ctx.translate(x + w / 2, y + 64); ctx.rotate(-0.08); envelope(ctx, 0, 0, 74, 50, '#fff3c4'); ctx.restore();
@@ -839,7 +839,7 @@
         D.text(ctx, this.mode === 'stamp' ? `Pick a stamp for ${CK.Data.party[cards[this.sel]].name}:` : 'Your stamps (pick a friend first):', 70, 276, { size: 15, weight: 700, color: '#5b3a1e' });
         grid.forEach((id, i) => {
           const [x, y, w, h] = this.srect(i), on = this.mode === 'stamp' && i === this.ssel;
-          D.rr(ctx, x, y, w, h, 10); ctx.fillStyle = on ? '#fff0b8' : 'rgba(255,244,220,0.7)'; ctx.fill(); stroke(ctx, on ? 2.5 : 1);
+          D.rr(ctx, x, y, w, h, 10); ctx.fillStyle = on ? D.C.sheetHi : 'rgba(251,243,226,0.7)'; ctx.fill(); stroke(ctx, on ? 2.5 : 1);
           if (!id) { D.text(ctx, 'None', x + w / 2, y + 48, { size: 15, weight: 700, align: 'center', color: '#9a7a5a' }); return; }
           CK.drawStamp(ctx, id, x + w / 2, y + 32, 42);
           const wearer = Object.keys(B.equip).find((k) => B.equip[k] === id);
@@ -868,13 +868,13 @@
       if (Input.hit('back') || Input.hit('ok') || (Input.mouse.pressed && !D.inRect(Input.mouse.x, Input.mouse.y, 60, 92, 270, 44 * L.length))) { CK.Audio.sfx('back'); CK.Scenes.remove(this); }
     }
     draw(ctx) {
-      ctx.fillStyle = 'rgba(30,15,5,0.65)'; ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, 40, 20, W - 80, H - 40, { fill: '#fff4dc' });
+      ctx.fillStyle = D.C.scrim; ctx.fillRect(0, 0, W, H);
+      D.panel(ctx, 40, 20, W - 80, H - 40, { fill: D.C.sheet });
       D.text(ctx, 'Letter Bag', 195, 66, { size: 26, weight: 700, align: 'center' });
       const L = this.list();
       L.forEach((l, i) => {
         const y = 92 + i * 44, on = i === this.sel, done = l === LAST || isDone(l), got = l === LAST || isFound(l);
-        D.rr(ctx, 60, y, 270, 40, 8); ctx.fillStyle = on ? '#fff0b8' : '#fffaf0'; ctx.fill(); stroke(ctx, on ? 2.5 : 1.2);
+        D.rr(ctx, 60, y, 270, 40, 8); ctx.fillStyle = on ? D.C.sheetHi : D.C.sheet; ctx.fill(); stroke(ctx, on ? 2.5 : 1.2);
         envelope(ctx, 84, y + 20, 26, 18, done ? '#fffaf0' : got ? '#fff3c4' : '#e8dcc8');
         D.text(ctx, got ? 'To ' + l.toName : '???', 106, y + 18, { size: 14, weight: 700, color: got ? '#3d2412' : '#9a7a5a' });
         D.text(ctx, done ? 'Delivered' : got ? 'Carrying it' : l.place && reached(l) ? 'Somewhere in ' + l.place : 'Somewhere out there', 106, y + 34, { size: 11, weight: 600, color: done ? '#3e7a5a' : got ? '#c2410c' : '#9a7a5a' });

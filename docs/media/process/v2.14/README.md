@@ -1,5 +1,7 @@
 # How v2.14 "Thimble Row" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.14.0"><img src="../../buttons/play.svg" alt="Play version 2.14.0 in your browser" height="64"></a> &nbsp;[Play 2.14.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.14.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image is a capture from the real game while it was being built, in order. The design notes, test report and asset manifest for this round are in [docs/SLICE_v2.14.md](../../../SLICE_v2.14.md).
 
 **This round:** a "festival neighborhood" vertical slice, built from Alek's inspiration atlas with a deliberately small reference stack:

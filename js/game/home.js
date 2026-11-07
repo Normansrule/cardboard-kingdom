@@ -100,7 +100,7 @@
         ctx.fillStyle = lg2; ctx.fillRect(260, 80, 600, 400);
       }
       this.parts.draw(ctx);
-      if (crit) { D.panel(ctx, W / 2 - 160, 8, 320, 40, { fill: '#fff4dc', tape: false }); D.text(ctx, 'CRIT DAY · LOAD TEST', W / 2, 34, { size: 18, weight: 700, align: 'center', color: '#c2410c' }); }
+      if (crit) { D.panel(ctx, W / 2 - 160, 8, 320, 40, { fill: D.C.sheet, tape: false }); D.text(ctx, 'CRIT DAY · LOAD TEST', W / 2, 34, { size: 18, weight: 700, align: 'center', color: '#c2410c' }); }
     }
     table(ctx, x, y, kind) {
       D.box3(ctx, x - 90, y - 4, 180, 18, 14, { r: 2, lw: 2.5, fill: '#c9a77a', flute: false });

@@ -79,7 +79,7 @@
     if (e.type !== 'npc' || !f('ph_tansy')) return;
     const id = Object.keys(PIECES).find((k) => PIECES[k].giver.includes(e.id) && f(PIECES[k].need) && !got(k));
     if (!id) return;
-    const x = e.px - this.camX + 22, y = e.py - this.camY - 70 + Math.sin(this.t * 3) * 3;
+    const x = e.px + (e.paceOff || 0) - this.camX + 22, y = e.py - this.camY - 70 + Math.sin(this.t * 3) * 3;
     ctx.save(); ctx.beginPath(); ctx.ellipse(x, y, 15, 13, 0, 0, TAU); ctx.fillStyle = '#fffaf0'; ctx.fill(); stroke(ctx, 2);
     D.poly(ctx, [x - 3, y + 11, x + 3, y + 11, x - 6, y + 18], '#fffaf0');
     drawPieceIcon(ctx, id, x, y, 0.55);
@@ -110,7 +110,7 @@
       const s = CK.Ease.outBack(Math.min(1, this.t * 2.5));
       ctx.save(); ctx.translate(W / 2, H / 2 - 20); ctx.scale(s, s);
       for (let i = 0; i < 12; i++) { ctx.save(); ctx.rotate(this.t * 0.5 + (i * Math.PI) / 6); ctx.globalAlpha = 0.25; D.poly(ctx, [0, 0, -20, -260, 20, -260], '#fff3a0'); ctx.restore(); }
-      D.panel(ctx, -250, -130, 500, 262, { fill: '#fff4dc' });
+      D.panel(ctx, -250, -130, 500, 262, { fill: D.C.sheet });
       drawPieceIcon(ctx, this.id, 0, -48, 2.8);
       D.text(ctx, 'Costume piece: ' + P.name, 0, 40, { size: 24, weight: 700, align: 'center', color: '#3d2412' });
       // three slots for this costume's pieces

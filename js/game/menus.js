@@ -10,6 +10,24 @@
     if (Input.hit('up')) { state.sel = (state.sel + n - 1) % n; CK.Audio.sfx('blip'); }
     if (Input.hit('down')) { state.sel = (state.sel + 1) % n; CK.Audio.sfx('blip'); }
   }
+  // a menu written as a letter: rows on ruled lines; the chosen row is inked violet and gets a postmark tick
+  function letterRows(ctx, rects, items, sel, P) {
+    rects.forEach((r, i) => {
+      const [x, y, w, h] = r, on = i === sel;
+      if (on) {
+        D.rr(ctx, x - 6, y, w + 12, h, 8);
+        ctx.fillStyle = P.sheetHi; ctx.fill();
+      }
+      D.line(ctx, x, y + h + 1, x + w, y + h + 1, P.line, 2);
+      D.text(ctx, items[i], x + 14, y + h / 2 + 7, { size: 19, weight: 800, color: on ? P.accent : P.text, display: false });
+      if (on) {
+        D.circle(ctx, x + w - 22, y + h / 2, 13, null, P.accent, 2.5);
+        ctx.beginPath(); ctx.moveTo(x + w - 28, y + h / 2 + 1); ctx.lineTo(x + w - 23, y + h / 2 + 6); ctx.lineTo(x + w - 15, y + h / 2 - 5);
+        ctx.strokeStyle = P.accent; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+      }
+    });
+  }
+  CK.letterRows = letterRows;
   function clickList(rects, state) {
     let pick = -1;
     rects.forEach((r, i) => {
@@ -35,7 +53,7 @@
       return (this.hasSave ? ['Continue'] : []).concat(['New Game (1 player)', 'New Game (2 players)', 'Settings']);
     }
     rects() {
-      return this.items().map((s, i) => [W / 2 - 150, 300 + i * 56, 300, 46]);
+      return this.items().map((s, i) => [W / 2 - 150, 262 + i * 52, 300, 44]);
     }
     update(dt) {
       this.t += dt;
@@ -96,10 +114,14 @@
       D.tape(ctx, -350, -86, 80, 26, -0.5);
       D.tape(ctx, 270, 40, 80, 26, -0.5);
       D.text(ctx, 'Cardboard Kingdom', 0, 18, { size: 70, weight: 700, align: 'center', color: '#fffaf0', outline: D.C.ink, ow: 10 });
-      D.text(ctx, 'a cozy adventure about building a better life', 0, 54, { size: 18, weight: 600, align: 'center', color: D.C.text });
+      D.text(ctx, 'a cozy adventure about building a better life', 0, 54, { size: 18, weight: 700, align: 'center', color: D.C.text });
       ctx.restore();
-      const items = this.items();
-      this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: 22 }));
+      // the menu is a postcard waiting on the table, postmarked by the Kingdom
+      const items = this.items(), R = this.rects();
+      const top = R[0][1] - 18, ph = items.length * 52 + 26;
+      D.panel(ctx, W / 2 - 182, top, 364, ph, { airmail: true });
+      R.forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: 20 }));
+      D.postmark(ctx, W / 2 + 150, R[0][1] - 4, 30, ['KINGDOM', 'POST'], { rot: -0.3, waves: false });
       if (CK.Scenes.top() === this) {
         const hint = 'Arrows + Z/Enter, or click  ·  M sound  ·  2 players: P1 WASD + Space, P2 Arrows + Enter';
         const hw = D.measure(ctx, hint, D.T.small, 600) + 32;
@@ -430,15 +452,17 @@
     }
     draw(ctx) {
       const G = CK.G;
-      ctx.fillStyle = 'rgba(30,15,5,0.9)';
+      ctx.fillStyle = D.C.navy;
+      ctx.globalAlpha = 0.94;
       ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
       D.text(ctx, 'Party & Costumes', 60, 56, { size: 30, weight: 700, color: '#fff', outline: D.C.ink });
       D.text(ctx, `Level ${G.level} · XP ${G.xp}/${CK.xpToNext(G.level)} · Armor: ${Data.reinforce[G.reinforce].name}`, 340, 54, { size: 16, weight: 600, color: '#ffe9a8' });
       G.party.forEach((m, i) => {
         const st = CK.stats(m);
         const [x, y, w] = this.mrect(i);
         const on = i === this.sel;
-        D.panel(ctx, x, y, w, 260, { fill: on ? '#fff3b0' : '#fff4dc', tape: on });
+        D.panel(ctx, x, y, w, 260, { fill: on ? D.C.sheetHi : D.C.sheet, edge: on ? D.C.violet : null, lw: on ? 4 : 2.5 });
         ctx.save();
         ctx.beginPath(); ctx.rect(x + 4, y + 4, w - 8, 200); ctx.clip();
         D.giant(ctx, m.costume, x + w / 2, y + 200, { s: w < 240 ? 0.6 : 0.7, who: m.id, mood: 'happy' });
@@ -528,15 +552,16 @@
     }
     draw(ctx) {
       const G = CK.G;
-      ctx.fillStyle = D.C.scrim;
+      const P = D.pal();
+      ctx.fillStyle = P.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 260, 24, 520, 496, { fill: D.C.sheet });
-      D.text(ctx, 'Cardboard Workbench', W / 2, 76, { size: 28, weight: 700, align: 'center', color: D.C.text });
+      D.panel(ctx, W / 2 - 260, 24, 520, 496, { theme: true, airmail: true });
+      D.text(ctx, 'Cardboard Workbench', W / 2, 76, { size: 28, weight: 700, align: 'center', color: P.text });
       const cur = Data.reinforce[G.reinforce];
-      D.text(ctx, `Armor: ${cur.name}  ·  Scraps: ${G.scraps}`, W / 2, 104, { size: D.T.ui, weight: 600, align: 'center', color: D.C.textSoft });
+      D.text(ctx, `Armor: ${cur.name}  ·  Scraps: ${G.scraps}`, W / 2, 104, { size: D.T.ui, weight: 700, align: 'center', color: P.soft });
       const next = Data.reinforce[G.reinforce + 1] || cur;
-      D.balance(ctx, '"' + next.fact + '"', 420, D.T.small, 500).slice(0, 3).forEach((l, i) => D.text(ctx, l, W / 2, 140 + i * 19, { size: D.T.small, weight: 500, align: 'center', color: D.C.text }));
-      D.text(ctx, `Reinforcing adds defense and makes water attacks ${Math.round(next.water * 100)}% weaker.`, W / 2, 204, { size: D.T.small, align: 'center', color: D.C.textSoft });
+      D.balance(ctx, '"' + next.fact + '"', 420, D.T.small, 600).slice(0, 3).forEach((l, i) => D.text(ctx, l, W / 2, 140 + i * 19, { size: D.T.small, weight: 600, align: 'center', color: P.text }));
+      D.text(ctx, `Reinforcing adds defense and makes water attacks ${Math.round(next.water * 100)}% weaker.`, W / 2, 204, { size: D.T.small, weight: 600, align: 'center', color: P.soft });
       const items = this.items();
       this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: 17, disabled: i === 0 && (!Data.reinforce[G.reinforce + 1] || G.scraps < Data.reinforce[G.reinforce + 1].cost) }));
     }
@@ -555,19 +580,31 @@
       }
     }
     draw(ctx) {
-      ctx.fillStyle = D.C.scrim;
+      const P = D.pal();
+      ctx.fillStyle = P.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, 80, 30, W - 160, H - 60, { fill: '#fffaf0' });
-      D.text(ctx, "Sam's Journal", W / 2, 76, { size: 28, weight: 700, align: 'center', color: D.C.text });
-      let y = 112;
-      const entries = CK.G.journal.slice(-8);
-      if (!entries.length) D.text(ctx, 'Nothing written yet.', W / 2, y, { size: 16, align: 'center' });
-      for (const e of entries) {
-        for (const l of D.wrap(ctx, '• ' + e, W - 240, 15, 500)) {
-          D.text(ctx, l, 110, y, { size: 15, weight: 500, color: D.C.text });
-          y += 20;
-        }
-        y += 8;
+      // a ruled notebook page; each entry sits on the lines
+      D.panel(ctx, 80, 30, W - 160, H - 60, { theme: true, lines: 24, lineTop: 86 });
+      D.line(ctx, 132, 40, 132, H - 40, P.label, 1.5);
+      D.text(ctx, "Sam's Journal", W / 2, 76, { size: 28, weight: 700, align: 'center', color: P.text });
+      // newest entries that fit on the page, oldest first
+      const rows = [];
+      for (let i = CK.G.journal.length - 1; i >= 0; i--) {
+        const ls = D.wrap(ctx, CK.G.journal[i], W - 300, 16, 600);
+        if (rows.length + ls.length > 16) break;
+        rows.unshift(...ls.map((l, k) => ({ l, first: k === 0 })));
+      }
+      const entries = rows;
+      // empty state: say what will show up here, not just that nothing has
+      if (!entries.length) {
+        D.text(ctx, 'Nothing written yet.', W / 2, 220, { size: 22, weight: 800, align: 'center', color: P.text });
+        D.text(ctx, 'Sam jots down every twist and every promise here as the story goes.', W / 2, 252, { size: 16, weight: 600, align: 'center', color: P.soft });
+      }
+      let y = 111;
+      for (const r of entries) {
+        if (r.first) D.circle(ctx, 116, y - 5, 3, P.accent);
+        D.text(ctx, r.l, 146, y, { size: 16, weight: 600, color: P.text });
+        y += 24;
       }
     }
   }
@@ -579,12 +616,12 @@
       this.sel = 0;
     }
     items() {
-      return ['Resume', 'Party & Costumes', 'Friends', 'Stamps & Letters', 'Journal', 'Settings', 'Save game', 'Quit to title'];
+      return ['Resume', 'Party & Costumes', 'Kingdom Book', 'Friends', 'Neighbors', 'Stamps & Letters', 'Journal', 'Settings', 'Save game', 'Quit to title'];
     }
     rects() {
       // three groups: get back to playing / look at your stuff / leave. Gaps do the grouping.
-      const gap = (i) => (i >= 1 ? 14 : 0) + (i >= 5 ? 14 : 0);
-      return this.items().map((s, i) => [W / 2 - 140, 100 + i * 44 + gap(i), 280, 38]);
+      const gap = (i) => (i >= 1 ? 8 : 0) + (i >= 7 ? 8 : 0);
+      return this.items().map((s, i) => [W / 2 - 172, 106 + i * 35 + gap(i), 344, 32]);
     }
     update() {
       const items = this.items();
@@ -594,28 +631,37 @@
       if (Input.hit('back')) pick = 0;
       if (pick < 0) return;
       CK.Audio.sfx('select');
-      if (pick === 0) CK.Scenes.remove(this);
-      else if (pick === 1) CK.Scenes.push(new PartyScreen(false));
-      else if (pick === 2) CK.Scenes.push(new CK.FriendsScreen());
-      else if (pick === 3) CK.Scenes.push(new CK.StampScreen());
-      else if (pick === 4) CK.Scenes.push(new JournalScreen());
-      else if (pick === 5) CK.Scenes.push(new CK.SettingsScreen());
-      else if (pick === 6) CK.toast(CK.saveGame() ? 'Game saved!' : 'Could not save (browser storage blocked).');
-      else if (pick === 7) {
+      const it = items[pick];
+      if (it === 'Resume') CK.Scenes.remove(this);
+      else if (it === 'Party & Costumes') CK.Scenes.push(new PartyScreen(false));
+      else if (it === 'Kingdom Book') CK.Scenes.push(new CK.KingdomBook());
+      else if (it === 'Friends') CK.Scenes.push(new CK.FriendsScreen());
+      else if (it === 'Neighbors') CK.Scenes.push(new CK.NeighborsScreen());
+      else if (it === 'Stamps & Letters') CK.Scenes.push(new CK.StampScreen());
+      else if (it === 'Journal') CK.Scenes.push(new JournalScreen());
+      else if (it === 'Settings') CK.Scenes.push(new CK.SettingsScreen());
+      else if (it === 'Save game') CK.toast(CK.saveGame() ? 'Game saved!' : 'Could not save (browser storage blocked).');
+      else if (it === 'Quit to title') {
         CK.saveGame();
         CK.flaps(() => CK.Scenes.replace(new TitleScene()));
       }
     }
     draw(ctx) {
-      ctx.fillStyle = D.C.scrim;
+      // the pause menu is a letter to Sam; the goal is its P.S.
+      const P = D.pal(), x = W / 2 - 200;
+      ctx.fillStyle = P.scrim;
       ctx.fillRect(0, 0, W, H);
-      D.panel(ctx, W / 2 - 180, 24, 360, 496, { fill: D.C.sheet });
-      D.text(ctx, 'Paused', W / 2, 74, { size: D.T.title, weight: 700, align: 'center', color: D.C.text });
-      const items = this.items();
-      this.rects().forEach((r, i) => D.button(ctx, ...r, items[i], { hover: i === this.sel, size: D.T.ui }));
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(-0.008); ctx.translate(-W / 2, -H / 2);
+      D.panel(ctx, x, 20, 400, 502, { theme: true });
+      D.text(ctx, 'Dear ' + (CK.coop ? 'Sam and Jules' : 'Sam') + ',', x + 30, 54, { size: D.T.small, weight: 800, color: P.soft });
+      D.text(ctx, 'Paused', x + 30, 92, { size: D.T.title, weight: 700, color: P.text });
+      const ow = CK.OW, night = ow && ow.night;
+      D.stamp(ctx, x + 400 - 82, 34, 56, 62, { holes: P.sheet, margin: 5, hole: 2.6, pitch: 8, fill: night ? '#2b2560' : '#dff0ff', art: (c, ix, iy, iw, ih) => D.icon(c, night ? 'moon' : 'sun', ix + iw / 2, iy + ih / 2, 1.1) });
+      letterRows(ctx, this.rects(), this.items(), this.sel, P);
       // where you are, so the menu doubles as a "what was I doing?" check
-      const ow = CK.OW, obj = ow && ow.ch && ow.ch.objective ? ow.ch.objective(CK.G) : '';
-      if (obj) D.text(ctx, D.wrap(ctx, obj, 300, D.T.small, 600)[0], W / 2, 500, { size: D.T.small, weight: 600, align: 'center', color: D.C.textSoft });
+      const obj = ow && ow.ch && ow.ch.objective ? ow.ch.objective(CK.G) : '';
+      if (obj) D.wrap(ctx, 'P.S. ' + obj, 330, D.T.small, 700).slice(0, 2).forEach((l, i) => D.text(ctx, l, x + 30, 490 + i * 16, { size: D.T.small, weight: 700, color: P.soft }));
+      ctx.restore();
     }
   }
   CK.PauseMenu = PauseMenu;

@@ -1,5 +1,7 @@
 # How v2.15 "Rivet, and the road so far" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.15.0"><img src="../../buttons/play.svg" alt="Play version 2.15.0 in your browser" height="64"></a> &nbsp;[Play 2.15.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.15.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image is a capture from the real game while it was being built, in order.
 
 **This round** had two jobs: the game gets the companion idea from the inspiration atlas (attachment, following, a useful ability), and the project gets a brand-new GitHub home with a README that shows how far the game has come, using animated clips recorded from the current build.

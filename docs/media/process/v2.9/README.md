@@ -1,5 +1,7 @@
 # How v2.9 "Patchwork Hall" was built
 
+<a href="https://normansrule.github.io/cardboard-kingdom/versions.html#v2.9.0"><img src="../../buttons/play.svg" alt="Play version 2.9.0 in your browser" height="64"></a> &nbsp;[Play 2.9.0](https://normansrule.github.io/cardboard-kingdom/versions.html#v2.9.0) · [Play the newest](https://normansrule.github.io/cardboard-kingdom/play.html)
+
 Every image here was captured straight from the game canvas while it was being built, in the order the work happened. Nothing is a mock-up.
 
 **What this round adds** (from [DESIGN_DIRECTION.md](../../../DESIGN_DIRECTION.md), sections 2, 3 and 7): a recurring workshop hub called Patchwork Hall, two new friends who live there (Tansy, a dormouse costume maker, and Brindle, a badger carpenter), and a Postcard Wall that shows every place you've rebuilt, before and after.

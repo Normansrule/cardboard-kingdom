@@ -9,7 +9,7 @@ NAME="cardboard-kingdom-${VERSION}"
 STAGE="dist/${NAME}"
 rm -rf "${STAGE}" "dist/${NAME}.zip"
 mkdir -p "${STAGE}"
-cp -r index.html js play.sh play.bat play.command PLAY.txt "${STAGE}/"
+cp -r play.html css fonts js play.sh play.bat play.command PLAY.txt "${STAGE}/"
 cp dist/cardboard-kingdom.html "${STAGE}/cardboard-kingdom-single-file.html"
 chmod +x "${STAGE}/play.sh" "${STAGE}/play.command"
 (cd dist && zip -qr "${NAME}.zip" "${NAME}")

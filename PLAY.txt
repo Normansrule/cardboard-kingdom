@@ -2,9 +2,11 @@ CARDBOARD KINGDOM - how to play
 ================================
 
 Windows:  double-click  play.bat
-macOS:    double-click  play.command   (or open index.html)
+macOS:    double-click  play.command   (or open play.html)
 Linux:    double-click  play.sh        (or run: bash play.sh)
-Anywhere: open index.html, or cardboard-kingdom-single-file.html, in any web browser.
+Anywhere: open play.html, or cardboard-kingdom-single-file.html, in any web browser.
+Online:   https://normansrule.github.io/cardboard-kingdom/play.html
+          (every version: https://normansrule.github.io/cardboard-kingdom/versions.html)
 
 No install and no internet needed. Your progress saves in the browser.
 

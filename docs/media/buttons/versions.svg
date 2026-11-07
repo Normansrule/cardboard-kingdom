@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="76" viewBox="0 0 250 76" role="img" aria-label="Play any earlier version">
+  <title>Play any earlier version</title>
+  <rect x="3" y="7" width="244" height="66" rx="16" fill="#2a2140" opacity=".3"/>
+  <rect x="3" y="3" width="244" height="66" rx="16" fill="#fbf3e2" stroke="#2a2140" stroke-width="3"/>
+  <circle cx="38" cy="36" r="15" fill="none" stroke="#5b3fa0" stroke-width="3"/>
+  <path d="M33 27 L46 36 L33 45 Z" fill="#5b3fa0"/>
+  <text x="62" y="34" font-family="'Trebuchet MS', 'Segoe UI', Verdana, sans-serif" font-size="19" font-weight="800" fill="#2a2140">Every version</text>
+  <text x="62" y="53" font-family="'Trebuchet MS', 'Segoe UI', Verdana, sans-serif" font-size="13" font-weight="700" fill="#5b3fa0">each one playable</text>
+</svg>

@@ -567,7 +567,7 @@
           else if (i === this.sel) { D.circle(ctx, x + w / 2, y + w / 2, 24 + Math.sin(this.t * 6) * 2, null, '#ffd25a', 3); }
         }
       });
-      D.panel(ctx, 120, 418, 720, 92, { fill: '#fffaf0', tape: false });
+      D.panel(ctx, 120, 418, 720, 92, { fill: D.C.sheet, tape: false });
       D.portrait(ctx, 'ibis', 136, 400, this.done ? 'happy' : 'sad');
       D.wrap(ctx, this.msg, 560, 16, 600).forEach((l, i) => D.text(ctx, l, 262, 452 + i * 22, { size: 16, weight: 600, color: '#3d2412' }));
       D.text(ctx, this.done ? 'Z / click to continue' : 'Arrows: move · Z / click: "that\'s different!"', W / 2, H - 8, { size: 12, weight: 600, align: 'center', color: '#e8d4b8' });
@@ -691,7 +691,7 @@
       D.text(ctx, `Scraps: ${cost} / ${BUDGET}`, 20, 455, { size: 13, weight: 700, color: cost > BUDGET ? '#d23a3a' : '#3d2412' });
       D.text(ctx, PIECES[KINDS[this.pick]].fact, 160, 455, { size: 12, weight: 600, color: '#5b3a1e' });
       if (this.state === 'result' || this.msg) {
-        D.panel(ctx, 220, 82, 520, 70, { fill: this.solved ? '#e8f8e0' : '#fffaf0', tape: false });
+        D.panel(ctx, 220, 82, 520, 70, { fill: this.solved ? '#e8f8e0' : D.C.sheet, tape: false });
         D.wrap(ctx, this.msg || '', 480, 15, 600).forEach((l, i) => D.text(ctx, l, 480, 110 + i * 20, { size: 15, weight: 600, align: 'center', color: this.solved ? '#2f6a3a' : '#3d2412' }));
       }
       D.text(ctx, 'Left/Right: slot · Up/Down: piece · Z: place · C: clear · T: test', W / 2, H - 6, { size: 11, weight: 600, align: 'center', color: '#5b3a1e' });

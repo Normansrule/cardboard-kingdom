@@ -1,8 +1,10 @@
-# Publishes the game to GitHub Pages so anyone can play it in a browser.
-name: Deploy game to GitHub Pages
+# Publishes the website (index.html), the game (play.html), and every tagged version of the game
+# (v/<version>/) with a versions.html page that gives each one its own Play button.
+name: Deploy site and game to GitHub Pages
 on:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,12 +21,23 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp -r index.html js docs _site/
+          cp -r index.html play.html css fonts site js docs _site/
           python3 tools/build_single.py
           cp dist/cardboard-kingdom.html _site/cardboard-kingdom-single-file.html
+      - name: Every tagged version, playable
+        run: |
+          for TAG in $(git tag -l 'v*'); do
+            V="${TAG#v}"; D="_site/v/$V"; mkdir -p "$D"
+            # only the game itself (no screenshots), so the site stays small
+            git archive "$TAG" | tar -x -C "$D" --wildcards 'index.html' 'play.html' 'css/*' 'fonts/*' 'js/*' 2>/dev/null || true
+            [ -f "$D/play.html" ] || [ -f "$D/index.html" ] || rm -rf "$D"
+          done
+          python3 tools/versions_page.py _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
